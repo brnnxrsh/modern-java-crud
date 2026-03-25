@@ -29,6 +29,8 @@
 	<properties>
 		<java.version>21</java.version>
 		<spring-cloud.version>2025.0.1</spring-cloud.version>
+		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+		<mapstruct.version>1.5.5.Final</mapstruct.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -74,12 +76,20 @@
     		<version>1.5.5.Final</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.mapstruct</groupId>
-    		<artifactId>mapstruct-processor</artifactId>
-    		<version>1.5.5.Final</version>
+		    <groupId>org.projectlombok</groupId>
+		    <artifactId>lombok</artifactId>
+		    <optional>true</optional>
+		</dependency>
+		<dependency>
+	    	<groupId>org.projectlombok</groupId>
+	    	<artifactId>lombok-mapstruct-binding</artifactId>
+			<version>${lombok-mapstruct-binding.version}</version>
+		</dependency>
+		<dependency>
+    	<groupId>org.hibernate.orm</groupId>
+    		<artifactId>hibernate-jpamodelgen</artifactId>
     		<scope>provided</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -113,6 +123,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+    		<groupId>org.instancio</groupId>
+    		<artifactId>instancio-junit</artifactId>
+    		<version>5.5.1</version>
+    		<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
@@ -140,9 +156,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<release>${java.version}</release>
-				</configuration>
 			</plugin>
 			<plugin>
             	<groupId>org.apache.maven.plugins</groupId>
@@ -150,14 +163,85 @@
             	<configuration>
           			<release>${java.version}</release>
                 	<annotationProcessorPaths>
-                    	<path>
-                        	<groupId>org.mapstruct</groupId>
-                        	<artifactId>mapstruct-processor</artifactId>
-                        	<version>1.5.5.Final</version>
-                    	</path>
+						<path>
+			                <groupId>org.projectlombok</groupId>
+			                <artifactId>lombok</artifactId>
+			                <version>${lombok.version}</version>
+			            </path>
+			            <path>
+			                <groupId>org.projectlombok</groupId>
+			                <artifactId>lombok-mapstruct-binding</artifactId>
+			                <version>${lombok-mapstruct-binding.version}</version>
+			            </path>
+			            <path>
+			                <groupId>org.mapstruct</groupId>
+			                <artifactId>mapstruct-processor</artifactId>
+			                <version>${mapstruct.version}</version>
+			            </path>
+			            <path>
+			                <groupId>org.hibernate.orm</groupId>
+			                <artifactId>hibernate-jpamodelgen</artifactId>
+			                <version>${hibernate.version}</version>
+			            </path>
                 	</annotationProcessorPaths>
             	</configuration>
         	</plugin>
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-surefire-plugin</artifactId>
+			    <configuration>
+			        <argLine>
+			            -XX:+EnableDynamicAgentLoading
+			            -Dmockito.inline=true
+			            -Xshare:off
+			        </argLine>
+			    </configuration>
+			</plugin>
+			<plugin>
+			  <groupId>com.diffplug.spotless</groupId>
+			  <artifactId>spotless-maven-plugin</artifactId>
+			  <version>3.2.1</version>
+
+			  <configuration>
+			    <java>
+				  <eclipse>
+				  	<file>formatter.xml</file>
+				  </eclipse>
+				  <importOrder>
+					<order>\#, ,com.brenner, ,java, ,jakarta, ,javax, ,org, ,com</order>
+			      </importOrder>
+				  <removeUnusedImports />
+				  <trimTrailingWhitespace />
+				  <endWithNewline />
+				</java>
+
+			    <formats>
+			      <format>
+			        <includes>
+			          <include>**/*.yml</include>
+			          <include>**/*.yaml</include>
+			        </includes>
+
+			        <trimTrailingWhitespace />
+			        <endWithNewline />
+
+			        <indent>
+			          <spaces>true</spaces>
+			          <spacesPerTab>2</spacesPerTab>
+			        </indent>
+			      </format>
+			    </formats>
+			  </configuration>
+
+			  <executions>
+			    <execution>
+			      <goals>
+			        <goal>apply</goal>
+			      </goals>
+			      <phase>process-sources</phase>
+			    </execution>
+			  </executions>
+			</plugin>
 		</plugins>
 	</build>
 
