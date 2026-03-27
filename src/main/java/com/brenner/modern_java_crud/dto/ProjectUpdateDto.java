@@ -4,7 +4,9 @@ import com.brenner.modern_java_crud.domain.ProjectStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,5 +21,8 @@ public record ProjectUpdateDto(
     @NotNull @JsonFormat(pattern = "yyyy-MM-dd") LocalDate expectedEndAt,
     @JsonFormat(pattern = "yyyy-MM-dd") LocalDate endAt,
     @NotNull @DecimalMin(value = "0.01") BigDecimal totalBudget,
-    @NotNull ProjectStatus status
+    @NotNull ProjectStatus status,
+    @NotNull @Valid MemberDto manager,
+    @Size(min = 1, max = 10) @Valid Set<MemberDto> members,
+    @NotNull Long version
 ) {}

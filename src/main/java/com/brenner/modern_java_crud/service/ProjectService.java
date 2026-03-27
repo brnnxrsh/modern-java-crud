@@ -28,6 +28,7 @@ public class ProjectService {
 
     private final ProjectMapper mapper;
     private final ProjectRepository repository;
+    private final MemberService memberService;
     private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
@@ -58,6 +59,9 @@ public class ProjectService {
     public ProjectDto create(final ProjectCreateDto dto) {
         Project entity = this.mapper.from(dto);
         entity.validateCreate();
+
+        memberService.attachAndValidateProject(entity);
+
         entity = this.saveAndRefresh(entity);
 
         log.info("[PROJECT-SERVICE] Projeto criado com sucesso: {}", entity);
@@ -70,6 +74,9 @@ public class ProjectService {
         Project entity = this.findEntity(id);
         this.mapper.merge(dto, entity);
         entity.validateUpdate();
+
+        memberService.attachAndValidateProject(entity);
+
         entity = this.saveAndRefresh(entity);
 
         log.info(

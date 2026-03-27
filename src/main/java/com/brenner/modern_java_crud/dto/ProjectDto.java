@@ -5,6 +5,7 @@ import com.brenner.modern_java_crud.domain.RiskLevel;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 
 public record ProjectDto(
     Long id,
@@ -15,5 +16,8 @@ public record ProjectDto(
     BigDecimal totalBudget,
     ProjectStatus status,
     RiskLevel riskLevel,
-    Integer durationMonths
+    Integer durationMonths,
+    MemberDto manager,
+    Set<MemberDto> members,
+    Long version
 ) {}
