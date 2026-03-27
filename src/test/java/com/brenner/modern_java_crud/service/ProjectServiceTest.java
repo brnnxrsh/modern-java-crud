@@ -38,6 +38,9 @@ class ProjectServiceTest {
     @Mock
     private EntityManager entityManager;
 
+    @Mock
+    private MemberService memberService;
+
     @InjectMocks
     private ProjectService service;
 
@@ -49,14 +52,22 @@ class ProjectServiceTest {
 
         when(mapper.from(createDto)).thenReturn(entity);
         doNothing().when(entity).validateCreate();
+        doNothing().when(memberService).attachAndValidateProject(entity);
         when(repository.save(entity)).thenReturn(entity);
         when(mapper.from(entity)).thenReturn(dto);
 
         final var result = service.create(createDto);
 
-        var inOrder = inOrder(mapper, entity, repository, entityManager);
+        var inOrder = inOrder(
+            mapper,
+            entity,
+            memberService,
+            repository,
+            entityManager
+        );
         inOrder.verify(mapper).from(createDto);
         inOrder.verify(entity).validateCreate();
+        inOrder.verify(memberService).attachAndValidateProject(entity);
         inOrder.verify(repository).save(entity);
         inOrder.verify(entityManager).flush();
         inOrder.verify(entityManager).refresh(entity);
@@ -75,15 +86,23 @@ class ProjectServiceTest {
         when(repository.findById(id)).thenReturn(Optional.of(entity));
         doNothing().when(mapper).merge(updateDto, entity);
         doNothing().when(entity).validateUpdate();
+        doNothing().when(memberService).attachAndValidateProject(entity);
         when(repository.save(entity)).thenReturn(entity);
         when(mapper.from(entity)).thenReturn(dto);
 
         final var result = service.update(id, updateDto);
 
-        var inOrder = inOrder(repository, mapper, entity, entityManager);
+        var inOrder = inOrder(
+            repository,
+            mapper,
+            entity,
+            memberService,
+            entityManager
+        );
         inOrder.verify(repository).findById(id);
         inOrder.verify(mapper).merge(updateDto, entity);
         inOrder.verify(entity).validateUpdate();
+        inOrder.verify(memberService).attachAndValidateProject(entity);
         inOrder.verify(repository).save(entity);
         inOrder.verify(entityManager).flush();
         inOrder.verify(entityManager).refresh(entity);
