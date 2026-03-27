@@ -48,10 +48,22 @@ public class ProjectSpec {
         return SpecUtils.greaterOrEqual(Project_.START_AT, startAt);
     }
 
+    /*
+    * WHERE fn_effective_date(end_at, expected_end_at) <= ?
+    */
     public static Specification<Project> withEndDate(final LocalDate endAt) {
         return SpecUtils.lessOrEqual(Project_.EFFECTIVE_END_AT, endAt);
     }
 
+    /*
+    * WHERE (
+    *     CASE
+    *         WHEN total_budget >= ? OR fn_months_between(start_at, fn_effective_date(end_at, expected_end_at)) >= ? THEN 'HIGH'
+    *         WHEN total_budget >= ? OR fn_months_between(start_at, fn_effective_date(end_at, expected_end_at)) >= ? THEN 'MEDIUM'
+    *         ELSE 'LOW'
+    *     END
+    * ) IN ('LOW', 'MEDIUM', 'HIGH')
+    */
     public static Specification<Project> withRiskLevels(
         final Set<RiskLevel> riskLevels
     ) {
