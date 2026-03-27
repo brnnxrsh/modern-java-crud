@@ -14,7 +14,8 @@ public enum ProjectStatus {
     FINISHED,
     CANCELLED;
 
-    private static final Set<ProjectStatus> NOT_DELETABLE = EnumSet.of(STARTED, IN_PROGRESS, FINISHED);
+    private static final Set<ProjectStatus> NOT_DELETABLE = EnumSet
+        .of(STARTED, IN_PROGRESS, FINISHED);
 
     public static ProjectStatus getInitial() {
         return IN_REVIEW;

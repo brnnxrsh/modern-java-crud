@@ -22,24 +22,34 @@ public enum RiskLevel {
     @Getter
     private static final List<RiskLevel> sortedDescending = Stream.of(values())
         .map(RiskLevel::validate)
-        .sorted(Comparator.comparing(RiskLevel::getMinTotalBudget).thenComparing(RiskLevel::getMinMonths).reversed())
+        .sorted(
+            Comparator.comparing(RiskLevel::getMinTotalBudget)
+                .thenComparing(RiskLevel::getMinMonths)
+                .reversed()
+        )
         .toList();
 
     private static RiskLevel validate(final RiskLevel targetLevel) {
         if (targetLevel.minTotalBudget.compareTo(BigDecimal.ZERO) < 0)
-            throw new IllegalStateException("minTotalBudget não pode ser negativo");
+            throw new IllegalStateException(
+                "minTotalBudget não pode ser negativo"
+            );
 
         if (targetLevel.minMonths < 0)
             throw new IllegalStateException("minMonths não pode ser negativo");
 
         boolean isDuplicated = Stream.of(values())
             .anyMatch(
-                level -> level != targetLevel && level.minTotalBudget.compareTo(targetLevel.minTotalBudget) == 0
-                        && level.minMonths == targetLevel.minMonths
+                level -> level != targetLevel
+                    && level.minTotalBudget
+                        .compareTo(targetLevel.minTotalBudget) == 0
+                    && level.minMonths == targetLevel.minMonths
             );
 
         if (isDuplicated)
-            throw new IllegalStateException("minTotalBudget e minMonths duplicados");
+            throw new IllegalStateException(
+                "minTotalBudget e minMonths duplicados"
+            );
 
         return targetLevel;
     }
@@ -48,7 +58,9 @@ public enum RiskLevel {
         final RiskLevel firstLevel = sortedDescending.getLast();
 
         if (firstLevel.minTotalBudget.compareTo(BigDecimal.ZERO) != 0)
-            throw new IllegalStateException("minTotalBudget do primeiro nível deve ser 0");
+            throw new IllegalStateException(
+                "minTotalBudget do primeiro nível deve ser 0"
+            );
 
         return firstLevel;
     }
@@ -57,11 +69,18 @@ public enum RiskLevel {
         return this == getFirstLevel();
     }
 
-    private boolean isSatisfiedBy(final BigDecimal totalBudget, final long months) {
-        return totalBudget.compareTo(minTotalBudget) >= 0 || months >= minMonths;
+    private boolean isSatisfiedBy(
+        final BigDecimal totalBudget,
+        final long months
+    ) {
+        return totalBudget.compareTo(minTotalBudget) >= 0
+            || months >= minMonths;
     }
 
-    public static RiskLevel from(final BigDecimal totalBudget, final long months) {
+    public static RiskLevel from(
+        final BigDecimal totalBudget,
+        final long months
+    ) {
         return sortedDescending.stream()
             .filter(riskLevel -> riskLevel.isSatisfiedBy(totalBudget, months))
             .findFirst()

@@ -84,7 +84,9 @@ public class ProjectTest {
         @ParameterizedTest
         @EnumSource(
             value = ProjectStatus.class,
-            names = { "CANCELLED" },
+            names = {
+                "CANCELLED"
+            },
             mode = EnumSource.Mode.EXCLUDE
         )
         void fillStatus_ShouldOnlyAllowNextStatus_FromAnyCurrentStatusExceptCancelled(
