@@ -18,13 +18,15 @@ CREATE TABLE projects (
     total_budget NUMERIC(15,2) NOT NULL,
     status PROJECT_STATUS NOT NULL DEFAULT 'IN_REVIEW',
     description VARCHAR(500),
-    member_id BIGINT,
     
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT chk_projects_expected_end_at CHECK (expected_end_at >= start_at),
-    CONSTRAINT chk_projects_end_at CHECK (end_at IS NULL OR end_at >= start_at)
+    CONSTRAINT chk_projects_expected_end_at
+    CHECK (expected_end_at >= start_at),
+    
+    CONSTRAINT chk_projects_end_at
+    CHECK (end_at IS NULL OR end_at >= start_at)
 );
 
 CREATE INDEX idx_projects_start_at
@@ -35,7 +37,3 @@ ON projects (total_budget);
 
 CREATE INDEX idx_projects_status
 ON projects (status);
-
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
-CREATE INDEX idx_projects_name
-ON projects USING gin (name gin_trgm_ops);
