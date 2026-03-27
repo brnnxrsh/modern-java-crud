@@ -4,11 +4,14 @@ import com.brenner.modern_java_crud.domain.ProjectStatus;
 import com.brenner.modern_java_crud.domain.RiskLevel;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 public record ProjectFilterDto(
+    Set<Long> managerIds,
+    Set<Long> memberIds,
     String name,
-    ProjectStatus status,
+    Set<ProjectStatus> statuses,
     LocalDate startAt,
     LocalDate endAt,
-    RiskLevel riskLevel
+    Set<RiskLevel> riskLevels
 ) {}

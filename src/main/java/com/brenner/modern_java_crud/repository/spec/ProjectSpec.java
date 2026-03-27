@@ -1,5 +1,6 @@
 package com.brenner.modern_java_crud.repository.spec;
 
+import com.brenner.modern_java_crud.domain.Member_;
 import com.brenner.modern_java_crud.domain.Project;
 import com.brenner.modern_java_crud.domain.ProjectStatus;
 import com.brenner.modern_java_crud.domain.Project_;
@@ -9,6 +10,7 @@ import com.brenner.modern_java_crud.util.SpecUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import jakarta.persistence.criteria.CriteriaBuilder.Case;
@@ -18,14 +20,26 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class ProjectSpec {
 
+    public static Specification<Project> withManagerIds(
+        final Set<Long> managerIds
+    ) {
+        return SpecUtils.joinIn(Project_.MANAGER, Member_.ID, managerIds);
+    }
+
+    public static Specification<Project> withMemberIds(
+        final Set<Long> memberIds
+    ) {
+        return SpecUtils.joinIn(Project_.MEMBERS, Member_.ID, memberIds);
+    }
+
     public static Specification<Project> withName(final String name) {
         return SpecUtils.likeIgnoreCase(Project_.NAME, name);
     }
 
-    public static Specification<Project> withStatus(
-        final ProjectStatus status
+    public static Specification<Project> withStatuses(
+        final Set<ProjectStatus> statuses
     ) {
-        return SpecUtils.equals(Project_.STATUS, status);
+        return SpecUtils.in(Project_.STATUS, statuses);
     }
 
     public static Specification<Project> withStartDate(
@@ -38,11 +52,11 @@ public class ProjectSpec {
         return SpecUtils.lessOrEqual(Project_.EFFECTIVE_END_AT, endAt);
     }
 
-    public static Specification<Project> withRiskLevel(
-        final RiskLevel targetRiskLevel
+    public static Specification<Project> withRiskLevels(
+        final Set<RiskLevel> riskLevels
     ) {
         return (root, query, cb) -> {
-            if (targetRiskLevel == null)
+            if (riskLevels == null || riskLevels.isEmpty())
                 return null;
 
             final Path<BigDecimal> totalBudget = root
@@ -70,10 +84,8 @@ public class ProjectSpec {
                         riskLevel
                     );
                 });
-
             cases.otherwise(RiskLevel.getFirstLevel());
-
-            return cb.equal(cases, targetRiskLevel);
+            return cases.in(riskLevels);
         };
     }
 
@@ -81,11 +93,13 @@ public class ProjectSpec {
         final ProjectFilterDto filter
     ) {
         return Specification.allOf(
+            withManagerIds(filter.managerIds()),
+            withMemberIds(filter.memberIds()),
             withName(filter.name()),
-            withStatus(filter.status()),
+            withStatuses(filter.statuses()),
             withStartDate(filter.startAt()),
             withEndDate(filter.endAt()),
-            withRiskLevel(filter.riskLevel())
+            withRiskLevels(filter.riskLevels())
         );
     }
 
