@@ -16,12 +16,14 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -135,6 +137,54 @@ public class GlobalExceptionHandler {
             HttpStatus.UNPROCESSABLE_ENTITY,
             e.getMessage(),
             "business-rule"
+        );
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleOptimisticLockingFailureException(
+        final ObjectOptimisticLockingFailureException e
+    ) {
+        return buildProblemDetail(
+            HttpStatus.CONFLICT,
+            "Os dados foram atualizados por outro usuário ou processo. Por favor, recarregue os dados.",
+            "conflict"
+        );
+    }
+
+    @ExceptionHandler(FeignException.NotFound.class)
+    public ProblemDetail handleFeignNotFoundException(
+        final FeignException.NotFound e
+    ) {
+        final var errorMessage = "O membro informado não existe no serviço externo de membros (Mock API).";
+
+        log.warn(
+            "[MEMBER-CLIENT] {} | URL: {}",
+            errorMessage,
+            e.request().url()
+        );
+
+        return buildProblemDetail(
+            HttpStatus.NOT_FOUND,
+            errorMessage,
+            "member-client-not-found"
+        );
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public ProblemDetail handleFeignException(final FeignException e) {
+        final var errorMessage = "Erro na comunicação com o serviço externo de membros (Mock API).";
+
+        log.error(
+            "[MEMBER-CLIENT] {} | URL: {}",
+            errorMessage,
+            e.request().url(),
+            e
+        );
+
+        return buildProblemDetail(
+            HttpStatus.BAD_GATEWAY,
+            errorMessage,
+            "member-client-generic-error"
         );
     }
 
