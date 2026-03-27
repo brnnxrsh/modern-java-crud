@@ -7,6 +7,7 @@ import static org.instancio.Select.field;
 import com.brenner.modern_java_crud.TestcontainersConfiguration;
 import com.brenner.modern_java_crud.domain.ProjectStatus;
 import com.brenner.modern_java_crud.domain.RiskLevel;
+import com.brenner.modern_java_crud.dto.MemberDto;
 import com.brenner.modern_java_crud.dto.ProjectCreateDto;
 import com.brenner.modern_java_crud.dto.ProjectDto;
 import com.brenner.modern_java_crud.dto.ProjectNextStepDto;
@@ -16,6 +17,7 @@ import com.brenner.modern_java_crud.exception.ResourceNotFoundException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
@@ -37,11 +39,16 @@ class ProjectServiceIT {
     @Autowired
     private ProjectService service;
 
+    private static final MemberDto MANAGER_DTO = new MemberDto(1L);
+    private static final MemberDto MEMBER_DTO = new MemberDto(2L);
+
     private ProjectDto createWithTotalBudget(final BigDecimal totalBudget) {
         final var createDto = Instancio.of(ProjectCreateDto.class)
             .set(field(ProjectCreateDto::totalBudget), totalBudget)
             .set(field(ProjectCreateDto::startAt), LocalDate.now())
             .set(field(ProjectCreateDto::expectedEndAt), LocalDate.now())
+            .set(field(ProjectCreateDto::manager), MANAGER_DTO)
+            .set(field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
             .create();
 
         return service.create(createDto);
@@ -56,6 +63,8 @@ class ProjectServiceIT {
             .set(field(ProjectUpdateDto::startAt), oldDto.startAt())
             .set(field(ProjectUpdateDto::expectedEndAt), oldDto.expectedEndAt())
             .set(field(ProjectUpdateDto::endAt), null)
+            .set(field(ProjectUpdateDto::manager), oldDto.manager())
+            .set(field(ProjectUpdateDto::members), oldDto.members())
             .create();
 
         return service.update(oldDto.id(), updateDto);
@@ -69,6 +78,8 @@ class ProjectServiceIT {
                 field(ProjectCreateDto::expectedEndAt),
                 LocalDate.now().plusMonths(durationMonths)
             )
+            .set(field(ProjectCreateDto::manager), MANAGER_DTO)
+            .set(field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
             .create();
 
         return service.create(createDto);
@@ -86,6 +97,8 @@ class ProjectServiceIT {
                 oldDto.startAt().plusMonths(durationMonths)
             )
             .set(field(ProjectUpdateDto::endAt), null)
+            .set(field(ProjectUpdateDto::manager), oldDto.manager())
+            .set(field(ProjectUpdateDto::members), oldDto.members())
             .create();
 
         return service.update(oldDto.id(), updateDto);
@@ -98,6 +111,8 @@ class ProjectServiceIT {
             .set(field(ProjectCreateDto::totalBudget), BigDecimal.ZERO)
             .set(field(ProjectCreateDto::startAt), LocalDate.now())
             .set(field(ProjectCreateDto::expectedEndAt), LocalDate.now())
+            .set(field(ProjectCreateDto::manager), MANAGER_DTO)
+            .set(field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
             .create();
 
         ProjectDto dto = service.create(createDto);
