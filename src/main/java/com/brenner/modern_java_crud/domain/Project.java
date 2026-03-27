@@ -6,19 +6,27 @@ import com.brenner.modern_java_crud.util.Ensure;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreRemove;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Formula;
@@ -46,6 +54,21 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private Long version;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id", nullable = false)
+    private Member manager;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "project_members",
+        joinColumns = @JoinColumn(name = "project_id"),
+        inverseJoinColumns = @JoinColumn(name = "member_id")
+    )
+    private Set<Member> members = new HashSet<>();
+
     @Column(nullable = false, length = 150)
     private String name;
 
@@ -71,9 +94,6 @@ public class Project {
 
     @Column(length = 500)
     private String description;
-
-    @Column(name = "member_id")
-    private Long memberId;
 
     @Setter(AccessLevel.NONE)
     @Enumerated(EnumType.STRING)
@@ -141,11 +161,15 @@ public class Project {
 
     public void validateCreate() {
         this.validateDateRange();
+        this.validateManager();
+        this.validateMembers();
     }
 
     public void validateUpdate() {
         this.validateDateRange();
         this.validateEndDate();
+        this.validateManager();
+        this.validateMembers();
     }
 
     public void validateDelete() {
@@ -153,7 +177,33 @@ public class Project {
 
         if (!this.status.canDelete())
             throw new BusinessException(
-                String.format("O status %s permite exclusão!", this.status)
+                String.format("O status %s não permite exclusão!", this.status)
+            );
+    }
+
+    public void validateManager() {
+        Ensure.notNull(this, this.manager);
+
+        final boolean isManagerInMembers = this.members.stream()
+            .anyMatch(
+                member -> Objects.equals(member.getId(), this.manager.getId())
+            );
+
+        if (isManagerInMembers)
+            throw new BusinessException(
+                String.format(
+                    "O membro ID %d já está como gerente responsável do projeto.",
+                    this.manager.getId()
+                )
+            );
+    }
+
+    public void validateMembers() {
+        Ensure.notNull(this, this.members);
+
+        if (this.members.size() < 1 || this.members.size() > 10)
+            throw new BusinessException(
+                "Cada projeto deve permitir a alocação de no mínimo 1 e no máximo 10 membros."
             );
     }
 
