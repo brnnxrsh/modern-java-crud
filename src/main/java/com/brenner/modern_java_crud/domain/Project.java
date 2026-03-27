@@ -85,12 +85,12 @@ public class Project {
     @Formula("fn_effective_date(end_at, expected_end_at)")
     private LocalDate effectiveEndAt;
 
+    @Setter(AccessLevel.NONE)
+    @Formula("fn_months_between(start_at, fn_effective_date(end_at, expected_end_at))")
+    private Integer durationMonths;
+    
     @Column(name = "total_budget", nullable = false, precision = 15, scale = 2)
     private BigDecimal totalBudget;
-
-    @Setter(AccessLevel.NONE)
-    @Formula("fn_months_between(start_at, expected_end_at)")
-    private Integer durationMonths;
 
     @Column(length = 500)
     private String description;
@@ -229,7 +229,7 @@ public class Project {
 
     public RiskLevel getRiskLevel() {
         return this.totalBudget == null || this.durationMonths == null ? null
-                : RiskLevel.from(this.totalBudget, this.durationMonths);
+            : RiskLevel.from(this.totalBudget, this.durationMonths);
     }
 
 }
