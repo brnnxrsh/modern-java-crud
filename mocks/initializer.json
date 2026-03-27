@@ -1,0 +1,42 @@
+[
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/members"
+    },
+    "httpResponse": {
+      "statusCode": 201,
+      "body": "{\"id\": 1, \"message\": \"Membro criado com sucesso\"}"
+    }
+  },
+  {
+    "httpRequest": { "method": "GET", "path": "/members/1" },
+    "httpResponse": {
+      "statusCode": 200,
+	  "headers": {
+	  	"Content-Type": ["application/json"]
+	  },
+      "body": "{\"id\": 1, \"name\": \"M1\", \"role\": \"MANAGER\"}"
+    }
+  },
+  {
+    "httpRequest": { "method": "GET", "path": "/members/2" },
+    "httpResponse": {
+      "statusCode": 200,
+	  "headers": {
+		"Content-Type": ["application/json"]
+	  },
+      "body": "{\"id\": 2, \"name\": \"M2\", \"role\": \"EMPLOYEE\"}"
+    }
+  },
+  {
+    "httpRequest": { "method": "GET", "path": "/members/3" },
+    "httpResponse": {
+      "statusCode": 200,
+    "headers": {
+  	"Content-Type": ["application/json"]
+    },
+      "body": "{\"id\": 3, \"name\": \"M3\", \"role\": \"EMPLOYEE\"}"
+    }
+  }
+]

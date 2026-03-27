@@ -1,7 +1,6 @@
 name: project-service
 
 services:
-
   postgres:
     image: postgres:16-alpine
     container_name: ${DB_NAME:-db-lcl}
@@ -14,8 +13,11 @@ services:
     ports:
       - "${DB_PORT:-5432}:5432"
 
+  member-api-mock:
+    image: mockserver/mockserver:5.15.0
+    ports:
+      - "1080:1080"
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializer.json
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-volumes:
-  postgres-data:
+      - ./mocks:/config
