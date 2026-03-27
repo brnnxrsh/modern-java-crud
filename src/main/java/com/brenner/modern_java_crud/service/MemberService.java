@@ -1,5 +1,6 @@
 package com.brenner.modern_java_crud.service;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
 import com.brenner.modern_java_crud.client.MemberClient;
@@ -18,9 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberService {
 
     private final ProjectRepository projectRepository;
@@ -32,8 +35,24 @@ public class MemberService {
         this.attachManager(project);
         this.validateManager(project);
 
+        log.info(
+            "[MEMBER-SERVICE] Gerente ID {} vinculado ao projeto '{}' e validado com sucesso",
+            project.getManager().getId(),
+            project.getName()
+        );
+
         this.attachMembers(project);
         this.validateMembers(project);
+
+        log.info(
+            "[MEMBER-SERVICE] Membros IDs [{}] vinculados ao projeto '{}' e validados com sucesso",
+            project.getMembers()
+                .stream()
+                .map(Member::getId)
+                .map(String::valueOf)
+                .collect(joining(", ")),
+            project.getName()
+        );
     }
 
     private void attachManager(final Project project) {
