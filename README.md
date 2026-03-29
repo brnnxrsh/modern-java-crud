@@ -10,43 +10,43 @@ API REST para gerenciamento de portfólio de projetos, desenvolvida com Java 21 
 
 ## Stack Tecnológica
 
-| Tecnologia | Versão | Uso |
-|---|---|---|
-| Java | 21 | Records, Pattern Matching, Streams com method references |
-| Spring Boot | 3.5 | Base da aplicação |
-| Spring Data JPA + Hibernate | — | Persistência com Specifications e Criteria API |
-| Spring Security | — | Autenticação Basic Auth + controle por role |
-| Spring Cloud OpenFeign | — | Client HTTP declarativo para API externa de membros |
-| PostgreSQL | 16 | Banco de dados com funções nativas e tipos ENUM |
-| Flyway | — | Versionamento de schema |
-| MapStruct | — | Mapeamento DTO ↔ Entity em tempo de compilação |
-| Lombok | — | Redução de boilerplate |
-| SpringDoc OpenAPI | — | Documentação interativa (Swagger UI) |
-| Testcontainers | — | Testes de integração com PostgreSQL real |
-| Instancio | — | Geração de dados para testes |
-| Spotless | — | Formatação de código automatizada (Eclipse formatter) |
+| Tecnologia                  | Versão | Uso                                                      |
+| --------------------------- | ------ | -------------------------------------------------------- |
+| Java                        | 21     | Records, Pattern Matching, Streams com method references |
+| Spring Boot                 | 3.5    | Base da aplicação                                        |
+| Spring Data JPA + Hibernate | —      | Persistência com Specifications e Criteria API           |
+| Spring Security             | —      | Autenticação Basic Auth + controle por role              |
+| Spring Cloud OpenFeign      | —      | Client HTTP declarativo para API externa de membros      |
+| PostgreSQL                  | 16     | Banco de dados com funções nativas e tipos ENUM          |
+| Flyway                      | —      | Versionamento de schema                                  |
+| MapStruct                   | —      | Mapeamento DTO ↔ Entity em tempo de compilação           |
+| Lombok                      | —      | Redução de boilerplate                                   |
+| SpringDoc OpenAPI           | —      | Documentação interativa (Swagger UI)                     |
+| Testcontainers              | —      | Testes de integração com PostgreSQL real                 |
+| Instancio                   | —      | Geração de dados para testes                             |
+| Spotless                    | —      | Formatação de código automatizada (Eclipse formatter)    |
 
 ---
 
 ## Requisitos vs Implementação
 
-| Requisito | Implementação |
-|---|---|
-| CRUD completo de projetos | `ProjectController` + `ProjectService` com fluxo map → validate → resolve → saveAndRefresh → log → map |
-| Campos: nome, datas, orçamento, descrição, gerente, status | Entidade `Project` com todos os campos, validações via `@PrePersist`/`@PreUpdate` |
-| Classificação de risco dinâmica (LOW / MEDIUM / HIGH) | `RiskLevel` enum com thresholds por orçamento e duração; calculado via `@Formula` + função PostgreSQL |
-| Status sequenciais com máquina de estados | `ProjectStatus.getNext()` + `canChangeTo()` — transições inválidas lançam `BusinessException` |
-| CANCELLED aplicável a qualquer momento | `canChangeTo()` sempre permite `CANCELLED`, independente do status atual |
-| Bloqueio de exclusão em STARTED, IN_PROGRESS, FINISHED | `EnumSet NOT_DELETABLE` + `validateDelete()` chamado via `@PreRemove` |
-| Somente EMPLOYEE pode ser membro do projeto | Validado em `MemberService` consultando a role via Feign antes de associar |
-| Limite de 3 projetos ativos por membro | `projectRepository.count(ProjectSpec.withMemberIdAndStatusNotIn(...))` antes de associar |
-| Cadastro de membros via API externa mockada | `MemberClient` (Feign) + Mock Server; URL externalizada em `clients.member.url` |
-| Relatório de portfólio | `ReportService.getSummary()` com 4 métricas via Criteria API |
-| Paginação e filtros na listagem de projetos | `Pageable` + `ProjectFilterDto` + `ProjectSpec` com 7 filtros opcionais |
-| Spring Security com controle de acesso | `ADMIN` acessa `/reports/**`; demais endpoints exigem autenticação; usuários via properties |
-| Tratamento global de exceções | `GlobalExceptionHandler` com RFC 7807 (`ProblemDetail`) |
-| Swagger / OpenAPI | SpringDoc com autenticação Basic configurada no schema |
-| Testes unitários | 9 classes de teste cobrindo domain, service, controller e exception |
+| Requisito                                                  | Implementação                                                                                          |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| CRUD completo de projetos                                  | `ProjectController` + `ProjectService` com fluxo map → validate → resolve → saveAndRefresh → log → map |
+| Campos: nome, datas, orçamento, descrição, gerente, status | Entidade `Project` com todos os campos, validações via `@PrePersist`/`@PreUpdate`                      |
+| Classificação de risco dinâmica (LOW / MEDIUM / HIGH)      | `RiskLevel` enum com thresholds por orçamento e duração; calculado via `@Formula` + função PostgreSQL  |
+| Status sequenciais com máquina de estados                  | `ProjectStatus.getNext()` + `canChangeTo()` — transições inválidas lançam `BusinessException`          |
+| CANCELLED aplicável a qualquer momento                     | `canChangeTo()` sempre permite `CANCELLED`, independente do status atual                               |
+| Bloqueio de exclusão em STARTED, IN_PROGRESS, FINISHED     | `EnumSet NOT_DELETABLE` + `validateDelete()` chamado via `@PreRemove`                                  |
+| Somente EMPLOYEE pode ser membro do projeto                | Validado em `MemberService` consultando a role via Feign antes de associar                             |
+| Limite de 3 projetos ativos por membro                     | `projectRepository.count(ProjectSpec.withMemberIdAndStatusNotIn(...))` antes de associar               |
+| Cadastro de membros via API externa mockada                | `MemberClient` (Feign) + Mock Server; URL externalizada em `clients.member.url`                        |
+| Relatório de portfólio                                     | `ReportService.getSummary()` com 4 métricas via Criteria API                                           |
+| Paginação e filtros na listagem de projetos                | `Pageable` + `ProjectFilterDto` + `ProjectSpec` com 7 filtros opcionais                                |
+| Spring Security com controle de acesso                     | `ADMIN` acessa `/reports/**`; demais endpoints exigem autenticação; usuários via properties            |
+| Tratamento global de exceções                              | `GlobalExceptionHandler` com RFC 7807 (`ProblemDetail`)                                                |
+| Swagger / OpenAPI                                          | SpringDoc com autenticação Basic configurada no schema                                                 |
+| Testes unitários                                           | 9 classes de teste cobrindo domain, service, controller e exception                                    |
 
 ---
 
@@ -206,19 +206,48 @@ com.brenner.modern_java_crud/
 
 ## Estratégia de Testes
 
-| Classe | Tipo | O que cobre |
-|---|---|---|
-| `ProjectTest` | Unitário | Validações de domínio: datas, membros, transições de status |
-| `ProjectServiceTest` | Unitário | Orquestração do fluxo via `InOrder` do Mockito |
-| `MemberServiceTest` | Unitário | Validação de role EMPLOYEE, limite de 3 projetos por membro |
-| `ReportServiceTest` | Unitário | Workflow de geração de relatório |
-| `ProjectControllerTest` | WebMvcTest | Endpoints REST + autenticação |
-| `MemberControllerTest` | WebMvcTest | Endpoints REST + autenticação |
-| `ReportControllerTest` | WebMvcTest | Acesso restrito a ADMIN + 401/403 |
-| `GlobalExceptionHandlerTest` | Unitário | Handlers de exceção Feign |
-| `ProjectServiceIT` | Integração | Regras de negócio com PostgreSQL real via Testcontainers |
+| Classe                       | Tipo       | O que cobre                                                 |
+| ---------------------------- | ---------- | ----------------------------------------------------------- |
+| `ProjectTest`                | Unitário   | Validações de domínio: datas, membros, transições de status |
+| `ProjectServiceTest`         | Unitário   | Orquestração do fluxo via `InOrder` do Mockito              |
+| `MemberServiceTest`          | Unitário   | Validação de role EMPLOYEE, limite de 3 projetos por membro |
+| `ReportServiceTest`          | Unitário   | Workflow de geração de relatório                            |
+| `ProjectControllerTest`      | WebMvcTest | Endpoints REST + autenticação                               |
+| `MemberControllerTest`       | WebMvcTest | Endpoints REST + autenticação                               |
+| `ReportControllerTest`       | WebMvcTest | Acesso restrito a ADMIN + 401/403                           |
+| `GlobalExceptionHandlerTest` | Unitário   | Handlers de exceção Feign                                   |
+| `ProjectServiceIT`           | Integração | Regras de negócio com PostgreSQL real via Testcontainers    |
 
 Os testes unitários de service verificam a **ordem** das operações com `inOrder()`, não apenas o resultado — garantindo que o fluxo `map → validate → resolve → saveAndRefresh` seja respeitado.
+
+### Testes de Integração — Cobertura do Core do Sistema
+
+`ProjectServiceIT` usa Testcontainers (PostgreSQL real) e cobre os dois comportamentos mais críticos do sistema:
+
+**Classificação de risco — todos os limites de fronteira, para criação e atualização:**
+
+| Budget     | Risk Level |
+| ---------- | ---------- |
+| 500.000,01 | HIGH       |
+| 500.000,00 | MEDIUM     |
+| 100.001,00 | MEDIUM     |
+| 100.000,99 | LOW        |
+| 0,00       | LOW        |
+
+| Duração (meses) | Risk Level |
+| --------------- | ---------- |
+| 7               | HIGH       |
+| 6               | MEDIUM     |
+| 3               | MEDIUM     |
+| 2               | LOW        |
+| 0               | LOW        |
+
+Cada combinação é testada tanto no `create` quanto no `update`, garantindo que a recalculação via `@Formula` + `entityManager.refresh()` funciona corretamente após persistência.
+
+**Máquina de estados — cobertura total:**
+
+- `advanceStep` cobre todos os status possíveis como destino (exceto CANCELLED), avançando o projeto sequencialmente até atingir cada um
+- `cancel` cobre todos os status como ponto de partida, garantindo que CANCELLED é sempre permitido
 
 ```bash
 ./mvnw test
