@@ -44,9 +44,18 @@ class ReportControllerTest {
         mockMvc.perform(get("/reports").accept(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON))
-            .andExpect(jsonPath("$.averageDurationInDays").value(dto.averageDurationInDays()))
-            .andExpect(jsonPath("$.countUniqueMembersAllocated").value(dto.countUniqueMembersAllocated()))
-            .andExpect(jsonPath("$.countUniqueManagersAllocated").value(dto.countUniqueManagersAllocated()));
+            .andExpect(
+                jsonPath("$.averageDurationInDays")
+                    .value(dto.averageDurationInDays())
+            )
+            .andExpect(
+                jsonPath("$.countUniqueMembersAllocated")
+                    .value(dto.countUniqueMembersAllocated())
+            )
+            .andExpect(
+                jsonPath("$.countUniqueManagersAllocated")
+                    .value(dto.countUniqueManagersAllocated())
+            );
     }
 
     @Test
