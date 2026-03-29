@@ -37,10 +37,6 @@ public enum ProjectStatus {
         };
     }
 
-    boolean isInitial() {
-        return this == getInitial();
-    }
-
     public boolean isFinal() {
         return this == getFinal();
     }
