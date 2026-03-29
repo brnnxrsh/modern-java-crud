@@ -1,6 +1,8 @@
 package com.brenner.modern_java_crud.service;
 
 import static org.assertj.core.api.Assertions.assertThatObject;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.inOrder;
@@ -12,9 +14,11 @@ import com.brenner.modern_java_crud.dto.ProjectCreateDto;
 import com.brenner.modern_java_crud.dto.ProjectDto;
 import com.brenner.modern_java_crud.dto.ProjectNextStepDto;
 import com.brenner.modern_java_crud.dto.ProjectUpdateDto;
+import com.brenner.modern_java_crud.exception.ResourceNotFoundException;
 import com.brenner.modern_java_crud.mapper.ProjectMapper;
 import com.brenner.modern_java_crud.repository.ProjectRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.persistence.EntityManager;
@@ -22,9 +26,13 @@ import jakarta.persistence.EntityManager;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith(MockitoExtension.class)
 class ProjectServiceTest {
@@ -174,6 +182,72 @@ class ProjectServiceTest {
         inOrder.verify(mapper).from(entity);
 
         assertThatObject(result).isEqualTo(dto);
+    }
+
+    @Test
+    void find_shouldInvokeWorkflowInOrder() {
+        final var entity = Instancio.create(Project.class);
+        final var dto = Instancio.create(ProjectDto.class);
+        final var id = 1L;
+
+        when(repository.findById(id)).thenReturn(Optional.of(entity));
+        when(mapper.from(entity)).thenReturn(dto);
+
+        final var result = service.find(id);
+
+        final var inOrder = inOrder(repository, mapper);
+        inOrder.verify(repository).findById(id);
+        inOrder.verify(mapper).from(entity);
+
+        assertThatObject(result).isEqualTo(dto);
+    }
+
+    @Test
+    void find_shouldThrowResourceNotFoundException_whenIdDoesNotExist() {
+        when(repository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.find(1L))
+            .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void findAll_shouldReturnPage_whenProjectsExist() {
+        final var entity = Instancio.create(Project.class);
+        final var dto = Instancio.create(ProjectDto.class);
+        final var pageable = Pageable.unpaged();
+        final var entityPage = new PageImpl<>(List.of(entity));
+
+        when(
+            repository.findAll(
+                ArgumentMatchers.<Specification<Project>>any(),
+                any(Pageable.class)
+            )
+        ).thenReturn(entityPage);
+        when(mapper.from(entity)).thenReturn(dto);
+
+        final var result = service
+            .findAll(ProjectTestFixtures.emptyFilter(), pageable);
+
+        assertThatObject(result.getTotalElements()).isEqualTo(1L);
+        assertThatObject(result.getContent().get(0)).isEqualTo(dto);
+    }
+
+    @Test
+    void findAll_shouldReturnEmptyPage_whenNoProjectsExist() {
+        final var pageable = Pageable.unpaged();
+        final var emptyPage = new PageImpl<Project>(List.of());
+
+        when(
+            repository.findAll(
+                ArgumentMatchers.<Specification<Project>>any(),
+                any(Pageable.class)
+            )
+        ).thenReturn(emptyPage);
+
+        final var result = service
+            .findAll(ProjectTestFixtures.emptyFilter(), pageable);
+
+        assertThatObject(result.hasContent()).isEqualTo(false);
     }
 
 }

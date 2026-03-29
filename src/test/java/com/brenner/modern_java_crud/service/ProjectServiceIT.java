@@ -1,17 +1,33 @@
 package com.brenner.modern_java_crud.service;
 
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.MANAGER_DTO;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.MEMBER_DTO;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.MEMBER_DTO_3;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.createBasic;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.createBasicAndAdvanceTo;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.createWithDates;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.createWithDurationMonths;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.createWithMembers;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.createWithName;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.createWithTotalBudget;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.emptyFilter;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.filterByEndAt;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.filterByManagerIds;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.filterByMemberIds;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.filterByName;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.filterByRiskLevels;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.filterByStartAt;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.filterByStatuses;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.updateWithDurationMonths;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.updateWithTotalBudget;
 import static org.assertj.core.api.Assertions.assertThatObject;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.instancio.Select.field;
 
 import com.brenner.modern_java_crud.TestcontainersConfiguration;
 import com.brenner.modern_java_crud.domain.ProjectStatus;
 import com.brenner.modern_java_crud.domain.RiskLevel;
-import com.brenner.modern_java_crud.dto.MemberDto;
-import com.brenner.modern_java_crud.dto.ProjectCreateDto;
 import com.brenner.modern_java_crud.dto.ProjectDto;
 import com.brenner.modern_java_crud.dto.ProjectNextStepDto;
-import com.brenner.modern_java_crud.dto.ProjectUpdateDto;
 import com.brenner.modern_java_crud.exception.BusinessException;
 import com.brenner.modern_java_crud.exception.ResourceNotFoundException;
 
@@ -20,15 +36,15 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,185 +54,99 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class ProjectServiceIT {
 
+    static Stream<Arguments> riskLevelByBudgetCases() {
+        return ProjectTestFixtures.riskLevelByBudgetCases();
+    }
+
+    static Stream<Arguments> riskLevelUpdateByBudgetCases() {
+        return ProjectTestFixtures.riskLevelUpdateByBudgetCases();
+    }
+
+    static Stream<Arguments> riskLevelByDurationCases() {
+        return ProjectTestFixtures.riskLevelByDurationCases();
+    }
+
+    static Stream<Arguments> riskLevelUpdateByDurationCases() {
+        return ProjectTestFixtures.riskLevelUpdateByDurationCases();
+    }
+
+    static Stream<ProjectStatus> deletableStatuses() {
+        return ProjectTestFixtures.deletableStatuses();
+    }
+
+    static Stream<ProjectStatus> nonDeletableStatuses() {
+        return ProjectTestFixtures.nonDeletableStatuses();
+    }
+
     @Autowired
     private ProjectService service;
 
-    private static final MemberDto MANAGER_DTO = new MemberDto(1L);
-    private static final MemberDto MEMBER_DTO = new MemberDto(2L);
-
-    private ProjectDto createWithTotalBudget(final BigDecimal totalBudget) {
-        final var createDto = Instancio.of(ProjectCreateDto.class)
-            .set(field(ProjectCreateDto::totalBudget), totalBudget)
-            .set(field(ProjectCreateDto::startAt), LocalDate.now())
-            .set(field(ProjectCreateDto::expectedEndAt), LocalDate.now())
-            .set(field(ProjectCreateDto::manager), MANAGER_DTO)
-            .set(field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
-            .create();
-
-        return service.create(createDto);
-    }
-
-    private ProjectDto updateWithTotalBudget(
-        final ProjectDto oldDto,
-        final BigDecimal totalBudget
-    ) {
-        final var updateDto = Instancio.of(ProjectUpdateDto.class)
-            .set(field(ProjectUpdateDto::totalBudget), totalBudget)
-            .set(field(ProjectUpdateDto::startAt), oldDto.startAt())
-            .set(field(ProjectUpdateDto::expectedEndAt), oldDto.expectedEndAt())
-            .set(field(ProjectUpdateDto::endAt), null)
-            .set(field(ProjectUpdateDto::manager), oldDto.manager())
-            .set(field(ProjectUpdateDto::members), oldDto.members())
-            .create();
-
-        return service.update(oldDto.id(), updateDto);
-    }
-
-    private ProjectDto createWithDurationMonths(final Integer durationMonths) {
-        final var createDto = Instancio.of(ProjectCreateDto.class)
-            .set(field(ProjectCreateDto::totalBudget), BigDecimal.ZERO)
-            .set(field(ProjectCreateDto::startAt), LocalDate.now())
-            .set(
-                field(ProjectCreateDto::expectedEndAt),
-                LocalDate.now().plusMonths(durationMonths)
-            )
-            .set(field(ProjectCreateDto::manager), MANAGER_DTO)
-            .set(field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
-            .create();
-
-        return service.create(createDto);
-    }
-
-    private ProjectDto updateWithDurationMonths(
-        final ProjectDto oldDto,
-        final Integer durationMonths
-    ) {
-        final var updateDto = Instancio.of(ProjectUpdateDto.class)
-            .set(field(ProjectUpdateDto::totalBudget), BigDecimal.ZERO)
-            .set(field(ProjectUpdateDto::startAt), oldDto.startAt())
-            .set(
-                field(ProjectUpdateDto::expectedEndAt),
-                oldDto.startAt().plusMonths(durationMonths)
-            )
-            .set(field(ProjectUpdateDto::endAt), null)
-            .set(field(ProjectUpdateDto::manager), oldDto.manager())
-            .set(field(ProjectUpdateDto::members), oldDto.members())
-            .create();
-
-        return service.update(oldDto.id(), updateDto);
-    }
-
-    private ProjectDto createBasicAndAdvanceTo(
-        final ProjectStatus targetStatus
-    ) {
-        final var createDto = Instancio.of(ProjectCreateDto.class)
-            .set(field(ProjectCreateDto::totalBudget), BigDecimal.ZERO)
-            .set(field(ProjectCreateDto::startAt), LocalDate.now())
-            .set(field(ProjectCreateDto::expectedEndAt), LocalDate.now())
-            .set(field(ProjectCreateDto::manager), MANAGER_DTO)
-            .set(field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
-            .create();
-
-        ProjectDto dto = service.create(createDto);
-        assertThatObject(dto.status()).isEqualTo(ProjectStatus.getInitial());
-
-        while (
-            dto.status() != targetStatus && !dto.status().isFinalOrCanceled()
-        )
-            dto = service
-                .advanceStep(dto.id(), new ProjectNextStepDto(LocalDate.now()));
-
-        if (dto.status() != targetStatus && targetStatus.isCanceled())
-            dto = service.cancel(dto.id());
-
-        return dto;
-    }
-
     @ParameterizedTest
-    @CsvSource(
-        {
-            "500000.01, HIGH",
-            "500000.00, MEDIUM",
-            "100001.00, MEDIUM",
-            "100000.99, LOW",
-            "     0.00, LOW"
-
-        }
-    )
+    @MethodSource("riskLevelByBudgetCases")
     void create_shouldCalculateCorrectRiskLevelByTotalBudget(
         final BigDecimal totalBudget,
         final RiskLevel riskLevel
     ) {
-        final ProjectDto dto = createWithTotalBudget(totalBudget);
+        final ProjectDto dto = createWithTotalBudget(service, totalBudget);
         assertThatObject(dto.totalBudget()).isEqualTo(totalBudget);
         assertThatObject(dto.riskLevel()).isEqualTo(riskLevel);
     }
 
     @ParameterizedTest
-    @CsvSource(
-        {
-            "     0.00, 500000.01,  LOW,    HIGH",
-            "500000.01, 500000.00,  HIGH,   MEDIUM",
-            "500000.00, 100001.00,  MEDIUM, MEDIUM",
-            "100001.00, 100000.99,  MEDIUM, LOW",
-            "100000.99, 0.00,       LOW,    LOW"
-        }
-    )
+    @MethodSource("riskLevelUpdateByBudgetCases")
     void update_shouldCalculateCorrectRiskLevelByTotalBudget(
         final BigDecimal oldTotalBudget,
         final BigDecimal newTotalBudget,
         final RiskLevel oldRiskLevel,
         final RiskLevel newRiskLevel
     ) {
-        final ProjectDto oldDto = createWithTotalBudget(oldTotalBudget);
+        final ProjectDto oldDto = createWithTotalBudget(
+            service,
+            oldTotalBudget
+        );
         assertThatObject(oldDto.totalBudget()).isEqualTo(oldTotalBudget);
         assertThatObject(oldDto.riskLevel()).isEqualTo(oldRiskLevel);
 
-        final ProjectDto newDto = updateWithTotalBudget(oldDto, newTotalBudget);
+        final ProjectDto newDto = updateWithTotalBudget(
+            service,
+            oldDto,
+            newTotalBudget
+        );
         assertThatObject(newDto.totalBudget()).isEqualTo(newTotalBudget);
         assertThatObject(newDto.riskLevel()).isEqualTo(newRiskLevel);
     }
 
     @ParameterizedTest()
-    @CsvSource(
-        {
-            "7, HIGH",
-            "6, MEDIUM",
-            "3, MEDIUM",
-            "2, LOW",
-            "0, LOW"
-        }
-    )
+    @MethodSource("riskLevelByDurationCases")
     void create_shouldCalculateCorrectRiskLevelByDurationMonths(
         final Integer durationMonths,
         final RiskLevel riskLevel
     ) {
-        final ProjectDto dto = createWithDurationMonths(durationMonths);
+        final ProjectDto dto = createWithDurationMonths(
+            service,
+            durationMonths
+        );
         assertThatObject(dto.durationMonths()).isEqualTo(durationMonths);
         assertThatObject(dto.riskLevel()).isEqualTo(riskLevel);
     }
 
     @ParameterizedTest()
-    @CsvSource(
-        {
-            "0, 7, LOW,    HIGH",
-            "7, 6, HIGH,   MEDIUM",
-            "6, 3, MEDIUM, MEDIUM",
-            "3, 2, MEDIUM, LOW",
-            "2, 0, LOW,    LOW"
-        }
-    )
+    @MethodSource("riskLevelUpdateByDurationCases")
     void update_shouldCalculateCorrectRiskLevelByDurationMonths(
         final Integer oldDurationMonths,
         final Integer newDurationMonths,
         final RiskLevel oldRiskLevel,
         final RiskLevel newRiskLevel
     ) {
-        final ProjectDto oldDto = createWithDurationMonths(oldDurationMonths);
+        final ProjectDto oldDto = createWithDurationMonths(
+            service,
+            oldDurationMonths
+        );
         assertThatObject(oldDto.durationMonths()).isEqualTo(oldDurationMonths);
         assertThatObject(oldDto.riskLevel()).isEqualTo(oldRiskLevel);
 
         final ProjectDto newDto = updateWithDurationMonths(
+            service,
             oldDto,
             newDurationMonths
         );
@@ -231,19 +161,10 @@ class ProjectServiceIT {
             .isInstanceOf(ResourceNotFoundException.class);
     }
 
-    static Stream<ProjectStatus> deletableStatuses() {
-        return Stream.of(ProjectStatus.values())
-            .filter(ProjectStatus::canDelete);
-    }
-
-    static Stream<ProjectStatus> nonDeletableStatuses() {
-        return Stream.of(ProjectStatus.values()).filter(s -> !s.canDelete());
-    }
-
     @ParameterizedTest
     @MethodSource("deletableStatuses")
     void delete_shouldDelete_whenAllowed(final ProjectStatus status) {
-        final ProjectDto dto = this.createBasicAndAdvanceTo(status);
+        final ProjectDto dto = createBasicAndAdvanceTo(service, status);
 
         service.delete(dto.id());
 
@@ -254,7 +175,7 @@ class ProjectServiceIT {
     @ParameterizedTest
     @MethodSource("nonDeletableStatuses")
     void delete_shouldThrow_whenNotAllowed(final ProjectStatus status) {
-        final ProjectDto dto = this.createBasicAndAdvanceTo(status);
+        final ProjectDto dto = createBasicAndAdvanceTo(service, status);
 
         assertThatThrownBy(() -> service.delete(dto.id()))
             .isInstanceOf(BusinessException.class);
@@ -271,16 +192,161 @@ class ProjectServiceIT {
     void advanceStep_shouldAdvanceStatusSuccessfully(
         final ProjectStatus targetStatus
     ) {
-        final ProjectDto dto = this.createBasicAndAdvanceTo(targetStatus);
+        final ProjectDto dto = createBasicAndAdvanceTo(service, targetStatus);
         assertThatObject(dto.status()).isEqualTo(targetStatus);
     }
 
     @ParameterizedTest
     @EnumSource(value = ProjectStatus.class)
     void cancel_shouldCancelSuccessfully(final ProjectStatus targetStatus) {
-        final ProjectDto dto = this.createBasicAndAdvanceTo(targetStatus);
+        final ProjectDto dto = createBasicAndAdvanceTo(service, targetStatus);
         final ProjectDto newDto = service.cancel(dto.id());
         assertThatObject(newDto.status()).isEqualTo(ProjectStatus.CANCELLED);
+    }
+
+    @Test
+    void find_shouldReturnProject_whenExists() {
+        final ProjectDto created = createBasic(service);
+        final ProjectDto found = service.find(created.id());
+        assertThatObject(found.id()).isEqualTo(created.id());
+    }
+
+    @Test
+    void findAll_shouldReturnAllProjects_whenNoFilterApplied() {
+        createBasic(service);
+        createBasic(service);
+
+        final var page = service.findAll(emptyFilter(), Pageable.unpaged());
+
+        assertThatObject(page.getTotalElements()).isEqualTo(2L);
+    }
+
+    @Test
+    void findAll_shouldFilterByName() {
+        createWithName(service, "UNIQUE_ALPHA_TEST_PROJECT");
+        createWithName(service, "UNIQUE_BETA_TEST_PROJECT");
+
+        final var page = service
+            .findAll(filterByName("ALPHA"), Pageable.unpaged());
+
+        assertThatObject(page.getTotalElements()).isEqualTo(1L);
+        assertThatObject(page.getContent().get(0).name())
+            .isEqualTo("UNIQUE_ALPHA_TEST_PROJECT");
+    }
+
+    @Test
+    void findAll_shouldFilterByStatus() {
+        final ProjectDto inReview = createBasic(service);
+        service.advanceStep(
+            createBasic(service).id(),
+            new ProjectNextStepDto(LocalDate.now())
+        );
+
+        final var page = service.findAll(
+            filterByStatuses(Set.of(ProjectStatus.IN_REVIEW)),
+            Pageable.unpaged()
+        );
+
+        assertThatObject(page.getTotalElements()).isEqualTo(1L);
+        assertThatObject(page.getContent().get(0).id())
+            .isEqualTo(inReview.id());
+    }
+
+    @Test
+    void findAll_shouldFilterByManagerId() {
+        createBasic(service);
+
+        final var filterMatch = filterByManagerIds(Set.of(MANAGER_DTO.id()));
+        final var filterNoMatch = filterByManagerIds(Set.of(9999L));
+
+        assertThatObject(
+            service.findAll(filterMatch, Pageable.unpaged()).getTotalElements()
+        ).isEqualTo(1L);
+        assertThatObject(
+            service.findAll(filterNoMatch, Pageable.unpaged())
+                .getTotalElements()
+        ).isEqualTo(0L);
+    }
+
+    @Test
+    void findAll_shouldFilterByMemberId() {
+        final ProjectDto withMember2 = createWithMembers(
+            service,
+            Set.of(MEMBER_DTO)
+        );
+        createWithMembers(service, Set.of(MEMBER_DTO_3));
+
+        final var page = service.findAll(
+            filterByMemberIds(Set.of(MEMBER_DTO.id())),
+            Pageable.unpaged()
+        );
+
+        assertThatObject(page.getTotalElements()).isEqualTo(1L);
+        assertThatObject(page.getContent().get(0).id())
+            .isEqualTo(withMember2.id());
+    }
+
+    @Test
+    void findAll_shouldFilterByStartAt() {
+        createWithDates(service, LocalDate.now(), LocalDate.now());
+        final ProjectDto future = createWithDates(
+            service,
+            LocalDate.now().plusDays(10),
+            LocalDate.now().plusDays(10)
+        );
+
+        final var page = service.findAll(
+            filterByStartAt(LocalDate.now().plusDays(5)),
+            Pageable.unpaged()
+        );
+
+        assertThatObject(page.getTotalElements()).isEqualTo(1L);
+        assertThatObject(page.getContent().get(0).id()).isEqualTo(future.id());
+    }
+
+    @Test
+    void findAll_shouldFilterByEndAt() {
+        final ProjectDto endsToday = createWithDurationMonths(service, 0);
+        createWithDurationMonths(service, 1);
+
+        final var page = service
+            .findAll(filterByEndAt(LocalDate.now()), Pageable.unpaged());
+
+        assertThatObject(page.getTotalElements()).isEqualTo(1L);
+        assertThatObject(page.getContent().get(0).id())
+            .isEqualTo(endsToday.id());
+    }
+
+    @ParameterizedTest
+    @MethodSource("riskLevelByBudgetCases")
+    void findAll_shouldFilterByRiskLevel_byBudget(
+        final BigDecimal totalBudget,
+        final RiskLevel riskLevel
+    ) {
+        createWithTotalBudget(service, totalBudget);
+
+        final var page = service
+            .findAll(filterByRiskLevels(Set.of(riskLevel)), Pageable.unpaged());
+
+        assertThatObject(page.getTotalElements()).isEqualTo(1L);
+        assertThatObject(page.getContent().get(0).riskLevel())
+            .isEqualTo(riskLevel);
+    }
+
+    @ParameterizedTest
+    @MethodSource("riskLevelByDurationCases")
+    void findAll_shouldFilterByRiskLevel_byDuration(
+        final Integer durationMonths,
+        final RiskLevel riskLevel
+    ) {
+        createWithDurationMonths(service, durationMonths);
+
+        final var page = service
+            .findAll(filterByRiskLevels(Set.of(riskLevel)), Pageable.unpaged());
+
+        assertThatObject(page.getTotalElements()).isEqualTo(1L);
+        assertThatObject(page.getContent().get(0).riskLevel())
+            .isEqualTo(riskLevel);
     }
 
 }
