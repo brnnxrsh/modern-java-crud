@@ -120,9 +120,14 @@ class ProjectServiceIT {
         ProjectDto dto = service.create(createDto);
         assertThatObject(dto.status()).isEqualTo(ProjectStatus.getInitial());
 
-        while (dto.status() != targetStatus && !dto.status().isFinal())
+        while (
+            dto.status() != targetStatus && !dto.status().isFinalOrCanceled()
+        )
             dto = service
                 .advanceStep(dto.id(), new ProjectNextStepDto(LocalDate.now()));
+
+        if (dto.status() != targetStatus && targetStatus.isCanceled())
+            dto = service.cancel(dto.id());
 
         return dto;
     }
