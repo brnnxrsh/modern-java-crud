@@ -1,5 +1,6 @@
 package com.brenner.modern_java_crud.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.instancio.Select.field;
 import static org.mockito.Mockito.doNothing;
@@ -11,6 +12,7 @@ import com.brenner.modern_java_crud.client.MemberClient;
 import com.brenner.modern_java_crud.domain.Member;
 import com.brenner.modern_java_crud.domain.MemberRole;
 import com.brenner.modern_java_crud.domain.Project;
+import com.brenner.modern_java_crud.dto.MemberExternalCreateDto;
 import com.brenner.modern_java_crud.dto.MemberExternalDto;
 import com.brenner.modern_java_crud.exception.BusinessException;
 import com.brenner.modern_java_crud.repository.ProjectRepository;
@@ -193,6 +195,29 @@ class MemberServiceTest {
 
         assertThatThrownBy(() -> service.attachAndValidateProject(project))
             .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    void create_shouldReturnMember() {
+        final var dto = Instancio.create(MemberExternalCreateDto.class);
+        final var expected = Instancio.create(MemberExternalDto.class);
+
+        when(memberClient.create(dto)).thenReturn(expected);
+
+        final var result = service.create(dto);
+
+        assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void findById_shouldReturnMember() {
+        final var expected = Instancio.create(MemberExternalDto.class);
+
+        when(memberClient.findById(expected.id())).thenReturn(expected);
+
+        final var result = service.findById(expected.id());
+
+        assertThat(result).isEqualTo(expected);
     }
 
 }
