@@ -22,6 +22,8 @@ CREATE TABLE projects (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
+    version BIGINT DEFAULT 0 NOT NULL,
+    
     CONSTRAINT chk_projects_expected_end_at
     CHECK (expected_end_at >= start_at),
     

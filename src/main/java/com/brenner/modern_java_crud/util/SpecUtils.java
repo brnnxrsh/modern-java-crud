@@ -24,6 +24,14 @@ public final class SpecUtils {
             : root.get(field).in(values);
     }
 
+    public static <T, V> Specification<T> notIn(
+        final String field,
+        final Collection<V> values
+    ) {
+        return (root, query, cb) -> values == null || values.isEmpty() ? null
+            : cb.not(root.get(field).in(values));
+    }
+
     public static <T, V> Specification<T> equals(
         final String field,
         final V value

@@ -33,17 +33,17 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public Page<ProjectDto> findAll(
-        final ProjectFilterDto filter,
+        final ProjectFilterDto filterDto,
         final Pageable pageable
     ) {
         final Page<ProjectDto> page = this.repository
-            .findAll(ProjectSpec.fromFilter(filter), pageable)
+            .findAll(ProjectSpec.withFilter(filterDto), pageable)
             .map(this.mapper::from);
 
         if (!page.hasContent())
             log.info(
                 "[PROJECT-SERVICE] Nenhum projeto encontrado para os filtros {} e paginação {}",
-                filter,
+                filterDto,
                 pageable
             );
 

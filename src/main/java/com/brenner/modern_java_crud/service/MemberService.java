@@ -10,6 +10,7 @@ import com.brenner.modern_java_crud.domain.Project;
 import com.brenner.modern_java_crud.domain.ProjectStatus;
 import com.brenner.modern_java_crud.exception.BusinessException;
 import com.brenner.modern_java_crud.repository.ProjectRepository;
+import com.brenner.modern_java_crud.repository.spec.ProjectSpec;
 
 import java.util.Set;
 
@@ -84,11 +85,12 @@ public class MemberService {
                     )
                 );
 
-            final long countedProjects = this.projectRepository
-                .countProjectsByMemberIdAndStatusNotIn(
+            final long countedProjects = this.projectRepository.count(
+                ProjectSpec.withMemberIdAndStatusNotIn(
                     memberId,
                     Set.of(ProjectStatus.FINISHED, ProjectStatus.CANCELLED)
-                );
+                )
+            );
 
             if (countedProjects >= 3)
                 throw new BusinessException(

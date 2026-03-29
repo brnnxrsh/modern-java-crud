@@ -63,7 +63,7 @@ public class Project {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "project_members",
+        name = "projects_members",
         joinColumns = @JoinColumn(name = "project_id"),
         inverseJoinColumns = @JoinColumn(name = "member_id")
     )
@@ -86,9 +86,11 @@ public class Project {
     private LocalDate effectiveEndAt;
 
     @Setter(AccessLevel.NONE)
-    @Formula("fn_months_between(start_at, fn_effective_date(end_at, expected_end_at))")
+    @Formula(
+        "fn_months_between(start_at, fn_effective_date(end_at, expected_end_at))"
+    )
     private Integer durationMonths;
-    
+
     @Column(name = "total_budget", nullable = false, precision = 15, scale = 2)
     private BigDecimal totalBudget;
 

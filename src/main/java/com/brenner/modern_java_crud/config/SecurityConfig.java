@@ -40,6 +40,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(
                 auth -> auth.requestMatchers(PUBLIC_ENDPOINTS)
                     .permitAll()
+                    .requestMatchers("/reports/**")
+                    .hasRole("ADMIN")
                     .anyRequest()
                     .authenticated()
             )

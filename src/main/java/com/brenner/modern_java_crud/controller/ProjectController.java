@@ -37,16 +37,16 @@ public class ProjectController {
 
     @GetMapping
     public Page<ProjectDto> findAll(
-        @ParameterObject final ProjectFilterDto filter,
+        @ParameterObject final ProjectFilterDto filterDto,
         @ParameterObject final Pageable pageable
     ) {
         log.debug(
             "[PROJECT-CONTROLLER] Listando projetos para os filtros {} e paginação {}",
-            filter,
+            filterDto,
             pageable
         );
 
-        return service.findAll(filter, pageable);
+        return service.findAll(filterDto, pageable);
     }
 
     @GetMapping("/{id}")

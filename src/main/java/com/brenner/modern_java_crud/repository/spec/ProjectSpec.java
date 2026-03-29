@@ -42,6 +42,12 @@ public class ProjectSpec {
         return SpecUtils.in(Project_.STATUS, statuses);
     }
 
+    public static Specification<Project> withNotStatuses(
+        final Set<ProjectStatus> statuses
+    ) {
+        return SpecUtils.notIn(Project_.STATUS, statuses);
+    }
+
     public static Specification<Project> withStartDate(
         final LocalDate startAt
     ) {
@@ -101,7 +107,7 @@ public class ProjectSpec {
         };
     }
 
-    public static Specification<Project> fromFilter(
+    public static Specification<Project> withFilter(
         final ProjectFilterDto filter
     ) {
         return Specification.allOf(
@@ -113,6 +119,14 @@ public class ProjectSpec {
             withEndDate(filter.endAt()),
             withRiskLevels(filter.riskLevels())
         );
+    }
+
+    public static Specification<Project> withMemberIdAndStatusNotIn(
+        final Long memberId,
+        final Set<ProjectStatus> statuses
+    ) {
+        return Specification
+            .allOf(withMemberIds(Set.of(memberId)), withNotStatuses(statuses));
     }
 
 }
