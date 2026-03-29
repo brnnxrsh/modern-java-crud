@@ -9,6 +9,7 @@ import static org.mockito.Mockito.spy;
 
 import com.brenner.modern_java_crud.exception.BusinessException;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 
 public class ProjectTest {
@@ -297,6 +299,32 @@ public class ProjectTest {
             });
         }
 
+        @Test
+        void shouldSuccessfully_WhenStatusIsFinalAndEndDateIsProvided() {
+            final var today = LocalDate.now();
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getStatus), ProjectStatus.getFinal())
+                .set(field(Project::getStartAt), today)
+                .set(field(Project::getEndAt), today)
+                .create();
+
+            runTestOnAllActions(actions, entity, (method, spyEntity) -> {
+                assertThatCode(method::run).doesNotThrowAnyException();
+            });
+        }
+
+        @Test
+        void shouldSuccessfully_WhenStatusIsNotFinalAndEndDateIsNull() {
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getStatus), ProjectStatus.IN_REVIEW)
+                .set(field(Project::getEndAt), null)
+                .create();
+
+            runTestOnAllActions(actions, entity, (method, spyEntity) -> {
+                assertThatCode(method::run).doesNotThrowAnyException();
+            });
+        }
+
     }
 
     @Nested
@@ -532,6 +560,74 @@ public class ProjectTest {
             runTestOnAllActions(actions, entity, (method, spyEntity) -> {
                 method.run();
             });
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Tests for getRiskLevel method")
+    class GetRiskLevelTests {
+
+        @Test
+        void shouldReturnNull_WhenTotalBudgetIsNull() {
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getTotalBudget), null)
+                .create();
+
+            assertThatObject(entity.getRiskLevel()).isNull();
+        }
+
+        @Test
+        void shouldReturnNull_WhenDurationMonthsIsNull() {
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getDurationMonths), null)
+                .create();
+
+            assertThatObject(entity.getRiskLevel()).isNull();
+        }
+
+        @ParameterizedTest
+        @CsvSource(
+            {
+                "500000.01, HIGH",
+                "500000.00, MEDIUM",
+                "100001.00, MEDIUM",
+                "100000.99, LOW",
+                "     0.00, LOW"
+            }
+        )
+        void shouldCalculateCorrectRiskLevel_ByTotalBudget(
+            final BigDecimal budget,
+            final RiskLevel expected
+        ) {
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getTotalBudget), budget)
+                .set(field(Project::getDurationMonths), 0)
+                .create();
+
+            assertThatObject(entity.getRiskLevel()).isEqualTo(expected);
+        }
+
+        @ParameterizedTest
+        @CsvSource(
+            {
+                "7, HIGH",
+                "6, MEDIUM",
+                "3, MEDIUM",
+                "2, LOW",
+                "0, LOW"
+            }
+        )
+        void shouldCalculateCorrectRiskLevel_ByDurationMonths(
+            final Integer durationMonths,
+            final RiskLevel expected
+        ) {
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getTotalBudget), BigDecimal.ZERO)
+                .set(field(Project::getDurationMonths), durationMonths)
+                .create();
+
+            assertThatObject(entity.getRiskLevel()).isEqualTo(expected);
         }
 
     }
