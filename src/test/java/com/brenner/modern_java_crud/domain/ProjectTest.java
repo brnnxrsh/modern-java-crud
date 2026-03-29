@@ -12,8 +12,11 @@ import com.brenner.modern_java_crud.exception.BusinessException;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.instancio.Instancio;
 import org.junit.jupiter.api.DisplayName;
@@ -335,6 +338,138 @@ public class ProjectTest {
             runTestOnAllActions(actions, entity, (method, spyEntity) -> {
                 assertThatThrownBy(method::run)
                     .isInstanceOf(IllegalStateException.class);
+            });
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Tests for validateManager method")
+    class ValidateManagerTests {
+
+        private final List<Action> actions = List.of(
+            new Action(
+                Project::validateCreate,
+                List.of(Project::validateDateRange, Project::validateMembers)
+            ),
+            new Action(
+                Project::validateUpdate,
+                List.of(
+                    Project::validateDateRange,
+                    Project::validateEndDate,
+                    Project::validateMembers
+                )
+            )
+        );
+
+        @Test
+        void shouldSuccessfully_WhenManagerIsNotAMember() {
+            final var manager = new Member(99L);
+            final var member = new Member(1L);
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getManager), manager)
+                .set(field(Project::getMembers), Set.of(member))
+                .create();
+
+            runTestOnAllActions(actions, entity, (method, spyEntity) -> {
+                assertThatCode(method::run).doesNotThrowAnyException();
+            });
+        }
+
+        @Test
+        void shouldThrowException_WhenManagerIsNull() {
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getManager), null)
+                .create();
+
+            runTestOnAllActions(actions, entity, (method, spyEntity) -> {
+                assertThatThrownBy(method::run)
+                    .isInstanceOf(IllegalStateException.class);
+            });
+        }
+
+        @Test
+        void shouldThrowException_WhenManagerIsAlsoAMember() {
+            final var manager = new Member(1L);
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getManager), manager)
+                .set(field(Project::getMembers), Set.of(manager))
+                .create();
+
+            runTestOnAllActions(actions, entity, (method, spyEntity) -> {
+                assertThatThrownBy(method::run)
+                    .isInstanceOf(BusinessException.class);
+            });
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Tests for validateMembers method")
+    class ValidateMembersTests {
+
+        private final List<Action> actions = List.of(
+            new Action(
+                Project::validateCreate,
+                List.of(Project::validateDateRange, Project::validateManager)
+            ),
+            new Action(
+                Project::validateUpdate,
+                List.of(
+                    Project::validateDateRange,
+                    Project::validateEndDate,
+                    Project::validateManager
+                )
+            )
+        );
+
+        @Test
+        void shouldSuccessfully_WhenMembersCountIsValid() {
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getMembers), Set.of(new Member(1L)))
+                .create();
+
+            runTestOnAllActions(actions, entity, (method, spyEntity) -> {
+                assertThatCode(method::run).doesNotThrowAnyException();
+            });
+        }
+
+        @Test
+        void shouldThrowException_WhenMembersIsNull() {
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getMembers), null)
+                .create();
+
+            runTestOnAllActions(actions, entity, (method, spyEntity) -> {
+                assertThatThrownBy(method::run)
+                    .isInstanceOf(IllegalStateException.class);
+            });
+        }
+
+        @Test
+        void shouldThrowException_WhenMembersIsEmpty() {
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getMembers), Set.of())
+                .create();
+
+            runTestOnAllActions(actions, entity, (method, spyEntity) -> {
+                assertThatThrownBy(method::run)
+                    .isInstanceOf(BusinessException.class);
+            });
+        }
+
+        @Test
+        void shouldThrowException_WhenMembersExceedMaximum() {
+            final var members = IntStream.rangeClosed(1, 11)
+                .mapToObj(i -> new Member((long) i))
+                .collect(Collectors.toSet());
+            final var entity = Instancio.of(Project.class)
+                .set(field(Project::getMembers), members)
+                .create();
+
+            runTestOnAllActions(actions, entity, (method, spyEntity) -> {
+                assertThatThrownBy(method::run)
+                    .isInstanceOf(BusinessException.class);
             });
         }
 
