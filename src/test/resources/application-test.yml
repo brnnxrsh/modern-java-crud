@@ -6,3 +6,10 @@ spring:
 
   flyway:
     enabled: true
+
+app:
+  security:
+    users:
+      - name: user
+        password: pass
+        role: USER
