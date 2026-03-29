@@ -18,12 +18,14 @@ import com.brenner.modern_java_crud.exception.ResourceNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -224,13 +226,19 @@ class ProjectServiceIT {
             .isInstanceOf(ResourceNotFoundException.class);
     }
 
+    static Stream<ProjectStatus> deletableStatuses() {
+        return Stream.of(ProjectStatus.values())
+            .filter(ProjectStatus::canDelete);
+    }
+
+    static Stream<ProjectStatus> nonDeletableStatuses() {
+        return Stream.of(ProjectStatus.values()).filter(s -> !s.canDelete());
+    }
+
     @ParameterizedTest
-    @EnumSource(value = ProjectStatus.class)
+    @MethodSource("deletableStatuses")
     void delete_shouldDelete_whenAllowed(final ProjectStatus status) {
         final ProjectDto dto = this.createBasicAndAdvanceTo(status);
-
-        if (!dto.status().canDelete())
-            return;
 
         service.delete(dto.id());
 
@@ -239,12 +247,9 @@ class ProjectServiceIT {
     }
 
     @ParameterizedTest
-    @EnumSource(value = ProjectStatus.class)
+    @MethodSource("nonDeletableStatuses")
     void delete_shouldThrow_whenNotAllowed(final ProjectStatus status) {
         final ProjectDto dto = this.createBasicAndAdvanceTo(status);
-
-        if (dto.status().canDelete())
-            return;
 
         assertThatThrownBy(() -> service.delete(dto.id()))
             .isInstanceOf(BusinessException.class);
