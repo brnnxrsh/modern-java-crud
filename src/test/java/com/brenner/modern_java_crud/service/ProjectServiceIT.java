@@ -1,8 +1,8 @@
 package com.brenner.modern_java_crud.service;
 
-import static com.brenner.modern_java_crud.service.ProjectTestFixtures.MANAGER_DTO;
-import static com.brenner.modern_java_crud.service.ProjectTestFixtures.MEMBER_DTO;
-import static com.brenner.modern_java_crud.service.ProjectTestFixtures.MEMBER_DTO_3;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.MANAGER_DTO_ID_1;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.MEMBER_DTO_ID_2;
+import static com.brenner.modern_java_crud.service.ProjectTestFixtures.MEMBER_DTO_ID_3;
 import static com.brenner.modern_java_crud.service.ProjectTestFixtures.createBasic;
 import static com.brenner.modern_java_crud.service.ProjectTestFixtures.createBasicAndAdvanceTo;
 import static com.brenner.modern_java_crud.service.ProjectTestFixtures.createWithDates;
@@ -256,7 +256,9 @@ class ProjectServiceIT {
     void findAll_shouldFilterByManagerId() {
         createBasic(service);
 
-        final var filterMatch = filterByManagerIds(Set.of(MANAGER_DTO.id()));
+        final var filterMatch = filterByManagerIds(
+            Set.of(MANAGER_DTO_ID_1.id())
+        );
         final var filterNoMatch = filterByManagerIds(Set.of(9999L));
 
         assertThatObject(
@@ -272,12 +274,12 @@ class ProjectServiceIT {
     void findAll_shouldFilterByMemberId() {
         final ProjectDto withMember2 = createWithMembers(
             service,
-            Set.of(MEMBER_DTO)
+            Set.of(MEMBER_DTO_ID_2)
         );
-        createWithMembers(service, Set.of(MEMBER_DTO_3));
+        createWithMembers(service, Set.of(MEMBER_DTO_ID_3));
 
         final var page = service.findAll(
-            filterByMemberIds(Set.of(MEMBER_DTO.id())),
+            filterByMemberIds(Set.of(MEMBER_DTO_ID_2.id())),
             Pageable.unpaged()
         );
 

@@ -24,9 +24,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProjectTestFixtures {
 
-    public static final MemberDto MANAGER_DTO = new MemberDto(1L);
-    public static final MemberDto MEMBER_DTO = new MemberDto(2L);
-    public static final MemberDto MEMBER_DTO_3 = new MemberDto(3L);
+    public static final MemberDto MANAGER_DTO_ID_1 = new MemberDto(1L);
+    public static final MemberDto MEMBER_DTO_ID_2 = new MemberDto(2L);
+    public static final MemberDto MEMBER_DTO_ID_3 = new MemberDto(3L);
 
     public static Stream<Arguments> riskLevelByBudgetCases() {
         return Stream.of(
@@ -76,8 +76,11 @@ public class ProjectTestFixtures {
             .set(Select.field(ProjectCreateDto::totalBudget), totalBudget)
             .set(Select.field(ProjectCreateDto::startAt), LocalDate.now())
             .set(Select.field(ProjectCreateDto::expectedEndAt), LocalDate.now())
-            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO)
-            .set(Select.field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
+            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO_ID_1)
+            .set(
+                Select.field(ProjectCreateDto::members),
+                Set.of(MEMBER_DTO_ID_2)
+            )
             .create();
 
         return service.create(createDto);
@@ -114,8 +117,11 @@ public class ProjectTestFixtures {
                 Select.field(ProjectCreateDto::expectedEndAt),
                 LocalDate.now().plusMonths(durationMonths)
             )
-            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO)
-            .set(Select.field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
+            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO_ID_1)
+            .set(
+                Select.field(ProjectCreateDto::members),
+                Set.of(MEMBER_DTO_ID_2)
+            )
             .create();
 
         return service.create(createDto);
@@ -154,8 +160,11 @@ public class ProjectTestFixtures {
             .set(Select.field(ProjectCreateDto::totalBudget), BigDecimal.ZERO)
             .set(Select.field(ProjectCreateDto::startAt), LocalDate.now())
             .set(Select.field(ProjectCreateDto::expectedEndAt), LocalDate.now())
-            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO)
-            .set(Select.field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
+            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO_ID_1)
+            .set(
+                Select.field(ProjectCreateDto::members),
+                Set.of(MEMBER_DTO_ID_2)
+            )
             .create();
         return service.create(createDto);
     }
@@ -168,7 +177,7 @@ public class ProjectTestFixtures {
             .set(Select.field(ProjectCreateDto::totalBudget), BigDecimal.ZERO)
             .set(Select.field(ProjectCreateDto::startAt), LocalDate.now())
             .set(Select.field(ProjectCreateDto::expectedEndAt), LocalDate.now())
-            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO)
+            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO_ID_1)
             .set(Select.field(ProjectCreateDto::members), members)
             .create();
         return service.create(createDto);
@@ -183,8 +192,11 @@ public class ProjectTestFixtures {
             .set(Select.field(ProjectCreateDto::totalBudget), BigDecimal.ZERO)
             .set(Select.field(ProjectCreateDto::startAt), startAt)
             .set(Select.field(ProjectCreateDto::expectedEndAt), expectedEndAt)
-            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO)
-            .set(Select.field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
+            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO_ID_1)
+            .set(
+                Select.field(ProjectCreateDto::members),
+                Set.of(MEMBER_DTO_ID_2)
+            )
             .create();
         return service.create(createDto);
     }
@@ -197,8 +209,11 @@ public class ProjectTestFixtures {
             .set(Select.field(ProjectCreateDto::totalBudget), BigDecimal.ZERO)
             .set(Select.field(ProjectCreateDto::startAt), LocalDate.now())
             .set(Select.field(ProjectCreateDto::expectedEndAt), LocalDate.now())
-            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO)
-            .set(Select.field(ProjectCreateDto::members), Set.of(MEMBER_DTO))
+            .set(Select.field(ProjectCreateDto::manager), MANAGER_DTO_ID_1)
+            .set(
+                Select.field(ProjectCreateDto::members),
+                Set.of(MEMBER_DTO_ID_2)
+            )
             .create();
 
         ProjectDto dto = service.create(createDto);
