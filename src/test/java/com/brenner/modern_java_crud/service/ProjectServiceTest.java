@@ -8,11 +8,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.brenner.modern_java_crud.domain.Project;
-import com.brenner.modern_java_crud.domain.ProjectMapper;
 import com.brenner.modern_java_crud.dto.ProjectCreateDto;
 import com.brenner.modern_java_crud.dto.ProjectDto;
 import com.brenner.modern_java_crud.dto.ProjectNextStepDto;
 import com.brenner.modern_java_crud.dto.ProjectUpdateDto;
+import com.brenner.modern_java_crud.mapper.ProjectMapper;
 import com.brenner.modern_java_crud.repository.ProjectRepository;
 
 import java.util.Optional;

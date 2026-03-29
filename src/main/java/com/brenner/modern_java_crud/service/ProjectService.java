@@ -1,13 +1,13 @@
 package com.brenner.modern_java_crud.service;
 
 import com.brenner.modern_java_crud.domain.Project;
-import com.brenner.modern_java_crud.domain.ProjectMapper;
 import com.brenner.modern_java_crud.dto.ProjectCreateDto;
 import com.brenner.modern_java_crud.dto.ProjectDto;
 import com.brenner.modern_java_crud.dto.ProjectFilterDto;
 import com.brenner.modern_java_crud.dto.ProjectNextStepDto;
 import com.brenner.modern_java_crud.dto.ProjectUpdateDto;
 import com.brenner.modern_java_crud.exception.ResourceNotFoundException;
+import com.brenner.modern_java_crud.mapper.ProjectMapper;
 import com.brenner.modern_java_crud.repository.ProjectRepository;
 import com.brenner.modern_java_crud.repository.spec.ProjectSpec;
 

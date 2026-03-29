@@ -1,5 +1,6 @@
-package com.brenner.modern_java_crud.domain;
+package com.brenner.modern_java_crud.mapper;
 
+import com.brenner.modern_java_crud.domain.Project;
 import com.brenner.modern_java_crud.dto.ProjectCreateDto;
 import com.brenner.modern_java_crud.dto.ProjectDto;
 import com.brenner.modern_java_crud.dto.ProjectNextStepDto;
