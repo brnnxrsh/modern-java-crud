@@ -155,10 +155,10 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleFeignNotFoundException(
         final FeignException.NotFound e
     ) {
-        final var errorMessage = "O membro informado não existe no serviço externo de membros (Mock API).";
+        final var errorMessage = "O recurso informado não existe no serviço externo.";
 
         log.warn(
-            "[MEMBER-CLIENT] {} | URL: {}",
+            "[FEIGN-CLIENT] {} | URL: {}",
             errorMessage,
             e.request().url()
         );
@@ -166,16 +166,16 @@ public class GlobalExceptionHandler {
         return buildProblemDetail(
             HttpStatus.NOT_FOUND,
             errorMessage,
-            "member-client-not-found"
+            "feign-not-found"
         );
     }
 
     @ExceptionHandler(FeignException.class)
     public ProblemDetail handleFeignException(final FeignException e) {
-        final var errorMessage = "Erro na comunicação com o serviço externo de membros (Mock API).";
+        final var errorMessage = "Erro na comunicação com o serviço externo.";
 
         log.error(
-            "[MEMBER-CLIENT] {} | URL: {}",
+            "[FEIGN-CLIENT] {} | URL: {}",
             errorMessage,
             e.request().url(),
             e
@@ -184,7 +184,7 @@ public class GlobalExceptionHandler {
         return buildProblemDetail(
             HttpStatus.BAD_GATEWAY,
             errorMessage,
-            "member-client-generic-error"
+            "feign-generic-error"
         );
     }
 

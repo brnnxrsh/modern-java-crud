@@ -18,7 +18,7 @@ class GlobalExceptionHandlerTest {
     private Request buildRequest() {
         return Request.create(
             Request.HttpMethod.GET,
-            "http://mock-api/members/1",
+            "http://mock-api/resource/1",
             Map.of(),
             Request.Body.empty(),
             null
@@ -41,11 +41,10 @@ class GlobalExceptionHandlerTest {
 
         assertThatObject(result.getStatus())
             .isEqualTo(HttpStatus.NOT_FOUND.value());
-        assertThatObject(result.getDetail()).isEqualTo(
-            "O membro informado não existe no serviço externo de membros (Mock API)."
-        );
+        assertThatObject(result.getDetail())
+            .isEqualTo("O recurso informado não existe no serviço externo.");
         assertThatObject(result.getType().toString())
-            .isEqualTo("urn:portfolio:error:member-client-not-found");
+            .isEqualTo("urn:portfolio:error:feign-not-found");
     }
 
     @Test
@@ -63,11 +62,10 @@ class GlobalExceptionHandlerTest {
 
         assertThatObject(result.getStatus())
             .isEqualTo(HttpStatus.BAD_GATEWAY.value());
-        assertThatObject(result.getDetail()).isEqualTo(
-            "Erro na comunicação com o serviço externo de membros (Mock API)."
-        );
+        assertThatObject(result.getDetail())
+            .isEqualTo("Erro na comunicação com o serviço externo.");
         assertThatObject(result.getType().toString())
-            .isEqualTo("urn:portfolio:error:member-client-generic-error");
+            .isEqualTo("urn:portfolio:error:feign-generic-error");
     }
 
 }
