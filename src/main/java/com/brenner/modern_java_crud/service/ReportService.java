@@ -21,15 +21,22 @@ public class ReportService {
     private final ProjectRepository projectRepository;
 
     public ReportDto getSummary() {
-        final var dto = new ReportDto(
-            projectRepository.getMetricsByStatus(Specification.unrestricted()),
-            projectRepository.getAverageDurationInDays(
+        final var statusMetrics = projectRepository
+            .getMetricsByStatus(Specification.unrestricted());
+        final var averageDurationInDays = projectRepository
+            .getAverageDurationInDays(
                 ProjectSpec.withStatuses(Set.of(ProjectStatus.FINISHED))
-            ),
-            projectRepository
-                .countUniqueMembersAllocated(Specification.unrestricted()),
-            projectRepository
-                .countUniqueManagersAllocated(Specification.unrestricted())
+            );
+        final var countUniqueMembersAllocated = projectRepository
+            .countUniqueMembersAllocated(Specification.unrestricted());
+        final var countUniqueManagersAllocated = projectRepository
+            .countUniqueManagersAllocated(Specification.unrestricted());
+
+        final var dto = new ReportDto(
+            statusMetrics,
+            averageDurationInDays,
+            countUniqueMembersAllocated,
+            countUniqueManagersAllocated
         );
 
         log.info(
