@@ -13,12 +13,14 @@ import feign.Request;
 
 class GlobalExceptionHandlerTest {
 
+    private static final String MOCK_URL = "http://mock-api/resource/1";
+
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
 
     private Request buildRequest() {
         return Request.create(
             Request.HttpMethod.GET,
-            "http://mock-api/resource/1",
+            MOCK_URL,
             Map.of(),
             Request.Body.empty(),
             null

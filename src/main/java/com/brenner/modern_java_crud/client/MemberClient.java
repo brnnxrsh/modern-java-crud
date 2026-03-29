@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "member-client", url = "http://localhost:1080")
+@FeignClient(name = "member-client", url = "${clients.member.url}")
 public interface MemberClient {
 
     @GetMapping("/members/{id}")

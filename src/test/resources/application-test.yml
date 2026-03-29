@@ -13,3 +13,7 @@ app:
       - name: user
         password: pass
         role: USER
+
+clients:
+  member:
+    url: http://localhost:1080

@@ -52,6 +52,10 @@ app:
         password: ${ADMIN_PASS}
         role: ADMIN
 
+clients:
+  member:
+    url: ${MEMBER_CLIENT_URL}
+
 logging:
   level:
     root: INFO

@@ -35,6 +35,10 @@ app:
         password: ${USER_PASS:user}
         role: USER
 
+clients:
+  member:
+    url: ${MEMBER_CLIENT_URL:http://localhost:1080}
+
 logging:
   level:
     web: DEBUG
