@@ -8,6 +8,8 @@ import com.brenner.modern_java_crud.domain.Member;
 import com.brenner.modern_java_crud.domain.MemberRole;
 import com.brenner.modern_java_crud.domain.Project;
 import com.brenner.modern_java_crud.domain.ProjectStatus;
+import com.brenner.modern_java_crud.dto.MemberExternalCreateDto;
+import com.brenner.modern_java_crud.dto.MemberExternalDto;
 import com.brenner.modern_java_crud.exception.BusinessException;
 import com.brenner.modern_java_crud.repository.ProjectRepository;
 import com.brenner.modern_java_crud.repository.spec.ProjectSpec;
@@ -30,6 +32,18 @@ public class MemberService {
     private final ProjectRepository projectRepository;
     private final MemberClient memberClient;
     private final EntityManager entityManager;
+
+    public MemberExternalDto create(final MemberExternalCreateDto dto) {
+        final var member = this.memberClient.create(dto);
+        log.info("[MEMBER-SERVICE] Membro criado com sucesso: {}", member);
+        return member;
+    }
+
+    public MemberExternalDto findById(final Long id) {
+        final var member = this.memberClient.findById(id);
+        log.info("[MEMBER-SERVICE] Membro ID {} encontrado com sucesso", id);
+        return member;
+    }
 
     @Transactional
     public void attachAndValidateProject(final Project project) {
