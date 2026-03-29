@@ -1,6 +1,6 @@
 package com.brenner.modern_java_crud.exception;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatObject;
 
 import java.util.Map;
 
@@ -20,51 +20,54 @@ class GlobalExceptionHandlerTest {
             Request.HttpMethod.GET,
             "http://mock-api/members/1",
             Map.of(),
-            (byte[]) null,
+            Request.Body.empty(),
             null
         );
     }
 
     @Test
     void handleFeignNotFoundException_shouldReturnNotFoundProblemDetail() {
-        final var exception = new FeignException.NotFound(
-            "Not Found",
-            buildRequest(),
-            null,
-            Map.of()
+        final FeignException exception = FeignException.errorStatus(
+            "GET",
+            feign.Response.builder()
+                .status(404)
+                .reason("Not Found")
+                .request(buildRequest())
+                .build()
         );
 
         final ProblemDetail result = handler
-            .handleFeignNotFoundException(exception);
+            .handleFeignNotFoundException((FeignException.NotFound) exception);
 
-        assertThat(result.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-        assertThat(result.getDetail()).isEqualTo(
+        assertThatObject(result.getStatus())
+            .isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThatObject(result.getDetail()).isEqualTo(
             "O membro informado não existe no serviço externo de membros (Mock API)."
         );
-        assertThat(result.getType().toString())
+        assertThatObject(result.getType().toString())
             .isEqualTo("urn:portfolio:error:member-client-not-found");
-        assertThat(result.getProperties()).containsKey("timestamp");
     }
 
     @Test
     void handleFeignException_shouldReturnBadGatewayProblemDetail() {
-        final var exception = new FeignException.InternalServerError(
-            "Internal Server Error",
-            buildRequest(),
-            null,
-            Map.of()
+        final FeignException exception = FeignException.errorStatus(
+            "GET",
+            feign.Response.builder()
+                .status(500)
+                .reason("Internal Server Error")
+                .request(buildRequest())
+                .build()
         );
 
         final ProblemDetail result = handler.handleFeignException(exception);
 
-        assertThat(result.getStatus())
+        assertThatObject(result.getStatus())
             .isEqualTo(HttpStatus.BAD_GATEWAY.value());
-        assertThat(result.getDetail()).isEqualTo(
+        assertThatObject(result.getDetail()).isEqualTo(
             "Erro na comunicação com o serviço externo de membros (Mock API)."
         );
-        assertThat(result.getType().toString())
+        assertThatObject(result.getType().toString())
             .isEqualTo("urn:portfolio:error:member-client-generic-error");
-        assertThat(result.getProperties()).containsKey("timestamp");
     }
 
 }

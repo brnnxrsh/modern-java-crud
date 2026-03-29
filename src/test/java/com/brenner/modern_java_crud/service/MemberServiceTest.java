@@ -1,6 +1,6 @@
 package com.brenner.modern_java_crud.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatObject;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.instancio.Select.field;
 import static org.mockito.Mockito.doNothing;
@@ -206,7 +206,7 @@ class MemberServiceTest {
 
         final var result = service.create(dto);
 
-        assertThat(result).isEqualTo(expected);
+        assertThatObject(result).isEqualTo(expected);
     }
 
     @Test
@@ -217,7 +217,7 @@ class MemberServiceTest {
 
         final var result = service.findById(expected.id());
 
-        assertThat(result).isEqualTo(expected);
+        assertThatObject(result).isEqualTo(expected);
     }
 
 }

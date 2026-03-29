@@ -1,6 +1,6 @@
 package com.brenner.modern_java_crud.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatObject;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
@@ -50,7 +50,7 @@ class ReportServiceTest {
         inOrder.verify(projectRepository).countUniqueMembersAllocated(any());
         inOrder.verify(projectRepository).countUniqueManagersAllocated(any());
 
-        assertThat(result).isEqualTo(
+        assertThatObject(result).isEqualTo(
             new ReportDto(
                 statusMetrics,
                 averageDurationInDays,

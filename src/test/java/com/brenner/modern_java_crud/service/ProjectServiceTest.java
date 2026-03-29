@@ -1,6 +1,6 @@
 package com.brenner.modern_java_crud.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatObject;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.inOrder;
@@ -73,7 +73,7 @@ class ProjectServiceTest {
         inOrder.verify(entityManager).refresh(entity);
         inOrder.verify(mapper).from(entity);
 
-        assertThat(result).isEqualTo(dto);
+        assertThatObject(result).isEqualTo(dto);
     }
 
     @Test
@@ -108,7 +108,7 @@ class ProjectServiceTest {
         inOrder.verify(entityManager).refresh(entity);
         inOrder.verify(mapper).from(entity);
 
-        assertThat(result).isEqualTo(dto);
+        assertThatObject(result).isEqualTo(dto);
     }
 
     @Test
@@ -149,7 +149,7 @@ class ProjectServiceTest {
         inOrder.verify(entityManager).refresh(entity);
         inOrder.verify(mapper).from(entity);
 
-        assertThat(result).isEqualTo(dto);
+        assertThatObject(result).isEqualTo(dto);
     }
 
     @Test
@@ -173,7 +173,7 @@ class ProjectServiceTest {
         inOrder.verify(entityManager).refresh(entity);
         inOrder.verify(mapper).from(entity);
 
-        assertThat(result).isEqualTo(dto);
+        assertThatObject(result).isEqualTo(dto);
     }
 
 }
