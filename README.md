@@ -204,53 +204,82 @@ com.brenner.modern_java_crud/
 
 ---
 
-## Estratégia de Testes
+## Arquitetura de Testes
 
-| Classe                       | Tipo       | O que cobre                                                 |
-| ---------------------------- | ---------- | ----------------------------------------------------------- |
-| `ProjectTest`                | Unitário   | Validações de domínio: datas, membros, transições de status |
-| `ProjectServiceTest`         | Unitário   | Orquestração do fluxo via `InOrder` do Mockito              |
-| `MemberServiceTest`          | Unitário   | Validação de role EMPLOYEE, limite de 3 projetos por membro |
-| `ReportServiceTest`          | Unitário   | Workflow de geração de relatório                            |
-| `ProjectControllerTest`      | WebMvcTest | Endpoints REST + autenticação                               |
-| `MemberControllerTest`       | WebMvcTest | Endpoints REST + autenticação                               |
-| `ReportControllerTest`       | WebMvcTest | Acesso restrito a ADMIN + 401/403                           |
-| `GlobalExceptionHandlerTest` | Unitário   | Handlers de exceção Feign                                   |
-| `ProjectServiceIT`           | Integração | Regras de negócio com PostgreSQL real via Testcontainers    |
+### Camadas de teste
 
-Os testes unitários de service verificam a **ordem** das operações com `inOrder()`, não apenas o resultado — garantindo que o fluxo `map → validate → resolve → saveAndRefresh` seja respeitado.
+| Camada | Framework principal | Banco real | Objetivo |
+| ------ | ------------------- | ---------- | -------- |
+| Unitário (`*Test`) | JUnit 5 + Mockito + Instancio | Não | Validar regras isoladas e fluxo de orquestração |
+| Web (`*ControllerTest`) | Spring `@WebMvcTest` + MockMvc | Não | Validar contrato HTTP, auth e status codes |
+| Integração (`*IT`, `contextLoads`) | Spring Boot Test + Testcontainers + Docker Compose | Sim | Validar comportamento fim a fim com PostgreSQL e mock de API externa |
 
-### Testes de Integração — Cobertura do Core do Sistema
+### Classes e cobertura
 
-`ProjectServiceIT` usa Testcontainers (PostgreSQL real) e cobre os dois comportamentos mais críticos do sistema:
+| Classe | Tipo | O que cobre |
+| ----- | ---- | ----------- |
+| `ProjectTest` | Unitário | Validações de domínio: datas, membros e transições de status |
+| `ProjectStatusTest` / `RiskLevelTest` | Unitário | Regras dos enums de domínio |
+| `ProjectServiceTest` | Unitário | Orquestração do service com `inOrder()` |
+| `MemberServiceTest` | Unitário | Regra de role EMPLOYEE e limite de projetos ativos |
+| `ReportServiceTest` | Unitário | Geração do relatório agregado |
+| `ProjectControllerTest` | WebMvcTest | Endpoints de projeto + autenticação |
+| `MemberControllerTest` | WebMvcTest | Endpoints de membro + autenticação |
+| `ReportControllerTest` | WebMvcTest | Controle de acesso (ADMIN / 401 / 403) |
+| `GlobalExceptionHandlerTest` | Unitário | Mapeamento global de exceções |
+| `ProjectServiceIT` | Integração | Regras críticas com PostgreSQL real via Testcontainers |
+| `ModernJavaCrudApplicationTests` | Integração | Smoke test de contexto Spring com profile de teste |
 
-**Classificação de risco — todos os limites de fronteira, para criação e atualização:**
+### Como os testes de integração sobem a infraestrutura
 
-| Budget     | Risk Level |
-| ---------- | ---------- |
-| 500.000,01 | HIGH       |
-| 500.000,00 | MEDIUM     |
-| 100.001,00 | MEDIUM     |
-| 100.000,99 | LOW        |
-| 0,00       | LOW        |
+`TestcontainersConfiguration` inicializa `DockerComposeContainer` com `compose.test.yml` e sobe:
 
-| Duração (meses) | Risk Level |
-| --------------- | ---------- |
-| 7               | HIGH       |
-| 6               | MEDIUM     |
-| 3               | MEDIUM     |
-| 2               | LOW        |
-| 0               | LOW        |
+- `postgres` (`postgres:16-alpine`)
+- `member-api-mock` (`mockserver/mockserver:5.15.0`)
 
-Cada combinação é testada tanto no `create` quanto no `update`, garantindo que a recalculação via `@Formula` + `entityManager.refresh()` funciona corretamente após persistência.
+As propriedades de runtime são injetadas por `@DynamicPropertySource`:
 
-**Máquina de estados — cobertura total:**
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`
+- `clients.member.url`
 
-- `advanceStep` cobre todos os status possíveis como destino (exceto CANCELLED), avançando o projeto sequencialmente até atingir cada um
-- `cancel` cobre todos os status como ponto de partida, garantindo que CANCELLED é sempre permitido
+`application-test.yml` mantém `spring.docker.compose.enabled=false`, então os testes **não** usam o compose automático do Spring Boot; usam apenas Testcontainers.
+
+### Tags e perfis
+
+- Testes que dependem de Docker usam `@Tag("docker")`
+- No profile Maven `docker-off`, a propriedade `excluded.test.groups=docker` remove esses testes
+- O profile `docker-off` também define `skipITs=true`, então o Failsafe não executa `*IT`
+
+## Como Rodar os Testes
+
+### Pré-requisitos por tipo de execução
+
+| Execução | Requer JDK 21 | Requer Docker | Requer rede (download deps) |
+| ------- | ------------- | ------------- | --------------------------- |
+| `./mvnw test` | Sim | Sim (por causa de `@Tag("docker")`) | Sim (na primeira execução) |
+| `./mvnw verify` | Sim | Sim | Sim (na primeira execução) |
+| `./mvnw test -Pdocker-off` | Sim | Não | Sim (na primeira execução) |
+| `./mvnw verify -Pdocker-off` | Sim | Não | Sim (na primeira execução) |
+
+### Comandos e o que cada um executa
+
+| Comando | O que executa |
+| ------- | ------------- |
+| `./mvnw test` | Fase `test` (Surefire): unitários + web + testes com `@Tag("docker")` (ex.: `ModernJavaCrudApplicationTests`) |
+| `./mvnw verify` | Tudo de `test` + Failsafe (`integration-test`/`verify`) com `*IT.java` (ex.: `ProjectServiceIT`) |
+| `./mvnw test -Pdocker-off` | Surefire sem grupo `docker`; roda somente testes que não dependem de containers |
+| `./mvnw verify -Pdocker-off` | Mesmo comportamento do `test -Pdocker-off` + pula `*IT` (`skipITs=true`) |
+| `./mvnw -Dtest=ProjectServiceIT test` | Roda somente a classe `ProjectServiceIT` (útil para diagnóstico local) |
+| `./mvnw -Dtest=ProjectServiceTest test` | Roda somente o unitário do service |
+
+### Fluxo recomendado no dia a dia
 
 ```bash
-./mvnw test
+# Feedback rápido sem Docker
+./mvnw test -Pdocker-off
+
+# Validação completa antes de abrir PR
+./mvnw verify
 ```
 
 ---
