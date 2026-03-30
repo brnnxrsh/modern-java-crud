@@ -230,6 +230,19 @@ public class ProjectTestFixtures {
         return dto;
     }
 
+    public static ProjectDto createFinishedWithEndAt(
+        final ProjectService service,
+        final LocalDate endAt
+    ) {
+        ProjectDto dto = createBasic(service);
+        while (
+            dto.status() != ProjectStatus.FINISHED
+                && !dto.status().isFinalOrCanceled()
+        )
+            dto = service.advanceStep(dto.id(), new ProjectNextStepDto(endAt));
+        return dto;
+    }
+
     public static Stream<ProjectStatus> deletableStatuses() {
         return Stream.of(ProjectStatus.values())
             .filter(ProjectStatus::canDelete);
