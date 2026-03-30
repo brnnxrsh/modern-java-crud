@@ -8,7 +8,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import com.brenner.modern_java_crud.client.MemberClient;
+import com.brenner.modern_java_crud.client.MemberClientAdapter;
 import com.brenner.modern_java_crud.domain.Member;
 import com.brenner.modern_java_crud.domain.MemberRole;
 import com.brenner.modern_java_crud.domain.Project;
@@ -37,7 +37,7 @@ class MemberServiceTest {
     private ProjectRepository projectRepository;
 
     @Mock
-    private MemberClient memberClient;
+    private MemberClientAdapter memberClientAdapter;
 
     @Mock
     private EntityManager entityManager;
@@ -72,9 +72,10 @@ class MemberServiceTest {
         when(entityManager.merge(member)).thenReturn(member);
         doNothing().when(project).validateManager();
         doNothing().when(project).validateMembers();
-        when(memberClient.findById(mergedManager.getId()))
+        when(memberClientAdapter.findById(mergedManager.getId()))
             .thenReturn(managerExternal);
-        when(memberClient.findById(member.getId())).thenReturn(memberExternal);
+        when(memberClientAdapter.findById(member.getId()))
+            .thenReturn(memberExternal);
         when(
             projectRepository
                 .count(ArgumentMatchers.<Specification<Project>>any())
@@ -85,15 +86,15 @@ class MemberServiceTest {
         final var inOrder = inOrder(
             entityManager,
             project,
-            memberClient,
+            memberClientAdapter,
             projectRepository
         );
         inOrder.verify(entityManager).merge(manager);
         inOrder.verify(project).validateManager();
-        inOrder.verify(memberClient).findById(mergedManager.getId());
+        inOrder.verify(memberClientAdapter).findById(mergedManager.getId());
         inOrder.verify(entityManager).merge(member);
         inOrder.verify(project).validateMembers();
-        inOrder.verify(memberClient).findById(member.getId());
+        inOrder.verify(memberClientAdapter).findById(member.getId());
         inOrder.verify(projectRepository)
             .count(ArgumentMatchers.<Specification<Project>>any());
     }
@@ -116,7 +117,7 @@ class MemberServiceTest {
 
         when(entityManager.merge(manager)).thenReturn(mergedManager);
         doNothing().when(project).validateManager();
-        when(memberClient.findById(mergedManager.getId()))
+        when(memberClientAdapter.findById(mergedManager.getId()))
             .thenReturn(managerExternal);
 
         assertThatThrownBy(() -> service.attachAndValidateProject(project))
@@ -150,9 +151,10 @@ class MemberServiceTest {
         when(entityManager.merge(member)).thenReturn(member);
         doNothing().when(project).validateManager();
         doNothing().when(project).validateMembers();
-        when(memberClient.findById(mergedManager.getId()))
+        when(memberClientAdapter.findById(mergedManager.getId()))
             .thenReturn(managerExternal);
-        when(memberClient.findById(member.getId())).thenReturn(memberExternal);
+        when(memberClientAdapter.findById(member.getId()))
+            .thenReturn(memberExternal);
 
         assertThatThrownBy(() -> service.attachAndValidateProject(project))
             .isInstanceOf(BusinessException.class);
@@ -185,9 +187,10 @@ class MemberServiceTest {
         when(entityManager.merge(member)).thenReturn(member);
         doNothing().when(project).validateManager();
         doNothing().when(project).validateMembers();
-        when(memberClient.findById(mergedManager.getId()))
+        when(memberClientAdapter.findById(mergedManager.getId()))
             .thenReturn(managerExternal);
-        when(memberClient.findById(member.getId())).thenReturn(memberExternal);
+        when(memberClientAdapter.findById(member.getId()))
+            .thenReturn(memberExternal);
         when(
             projectRepository
                 .count(ArgumentMatchers.<Specification<Project>>any())
@@ -202,7 +205,7 @@ class MemberServiceTest {
         final var dto = Instancio.create(MemberExternalCreateDto.class);
         final var expected = Instancio.create(MemberExternalDto.class);
 
-        when(memberClient.create(dto)).thenReturn(expected);
+        when(memberClientAdapter.create(dto)).thenReturn(expected);
 
         final var result = service.create(dto);
 
@@ -213,7 +216,7 @@ class MemberServiceTest {
     void findById_shouldReturnMember() {
         final var expected = Instancio.create(MemberExternalDto.class);
 
-        when(memberClient.findById(expected.id())).thenReturn(expected);
+        when(memberClientAdapter.findById(expected.id())).thenReturn(expected);
 
         final var result = service.findById(expected.id());
 

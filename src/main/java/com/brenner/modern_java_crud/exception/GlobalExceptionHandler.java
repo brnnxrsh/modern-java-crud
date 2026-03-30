@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import feign.FeignException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -148,6 +149,21 @@ public class GlobalExceptionHandler {
             HttpStatus.CONFLICT,
             "Os dados foram atualizados por outro usuário ou processo. Por favor, recarregue os dados.",
             "conflict"
+        );
+    }
+
+    @ExceptionHandler(CallNotPermittedException.class)
+    public ProblemDetail handleCallNotPermitted(
+        final CallNotPermittedException e
+    ) {
+        log.warn(
+            "[FEIGN-CLIENT] Circuit aberto para o serviço externo: {}",
+            e.getMessage()
+        );
+        return buildProblemDetail(
+            HttpStatus.SERVICE_UNAVAILABLE,
+            "O serviço externo está temporariamente indisponível.",
+            "service-unavailable"
         );
     }
 

@@ -16,6 +16,8 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import feign.FeignException;
 import feign.Request;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -66,6 +68,23 @@ class GlobalExceptionHandlerTest {
             .isEqualTo("O recurso informado não existe no serviço externo.");
         assertThatObject(result.getType().toString())
             .isEqualTo("urn:portfolio:error:feign-not-found");
+    }
+
+    @Test
+    void handleCallNotPermitted_shouldReturnServiceUnavailableProblemDetail() {
+        final var exception = CallNotPermittedException
+            .createCallNotPermittedException(
+                CircuitBreaker.ofDefaults("member-client")
+            );
+
+        final ProblemDetail result = handler.handleCallNotPermitted(exception);
+
+        assertThatObject(result.getStatus())
+            .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE.value());
+        assertThatObject(result.getDetail())
+            .isEqualTo("O serviço externo está temporariamente indisponível.");
+        assertThatObject(result.getType().toString())
+            .isEqualTo("urn:portfolio:error:service-unavailable");
     }
 
     @Test

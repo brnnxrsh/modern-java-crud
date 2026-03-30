@@ -3,7 +3,7 @@ package com.brenner.modern_java_crud.service;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
-import com.brenner.modern_java_crud.client.MemberClient;
+import com.brenner.modern_java_crud.client.MemberClientAdapter;
 import com.brenner.modern_java_crud.domain.Member;
 import com.brenner.modern_java_crud.domain.MemberRole;
 import com.brenner.modern_java_crud.domain.Project;
@@ -30,17 +30,17 @@ import lombok.extern.slf4j.Slf4j;
 public class MemberService {
 
     private final ProjectRepository projectRepository;
-    private final MemberClient memberClient;
+    private final MemberClientAdapter memberClientAdapter;
     private final EntityManager entityManager;
 
     public MemberExternalDto create(final MemberExternalCreateDto dto) {
-        final var member = this.memberClient.create(dto);
+        final var member = this.memberClientAdapter.create(dto);
         log.info("[MEMBER-SERVICE] Membro criado com sucesso: {}", member);
         return member;
     }
 
     public MemberExternalDto findById(final Long id) {
-        final var member = this.memberClient.findById(id);
+        final var member = this.memberClientAdapter.findById(id);
         log.info("[MEMBER-SERVICE] Membro ID {} encontrado com sucesso", id);
         return member;
     }
@@ -88,7 +88,8 @@ public class MemberService {
 
         for (final Member member : project.getMembers()) {
             final var memberId = member.getId();
-            final var memberExternal = this.memberClient.findById(memberId);
+            final var memberExternal = this.memberClientAdapter
+                .findById(memberId);
 
             if (memberExternal.role() != MemberRole.EMPLOYEE)
                 throw new BusinessException(
@@ -121,7 +122,8 @@ public class MemberService {
         project.validateManager();
 
         final var managerId = project.getManager().getId();
-        final var managerExternal = this.memberClient.findById(managerId);
+        final var managerExternal = this.memberClientAdapter
+            .findById(managerId);
 
         if (managerExternal.role() != MemberRole.MANAGER)
             throw new BusinessException(

@@ -5,6 +5,13 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:lcl}
 
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+        group:
+          enabled: true
+
   devtools:
       restart:
         enabled: false
@@ -55,6 +62,33 @@ app:
 clients:
   member:
     url: ${MEMBER_CLIENT_URL}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      member-client:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+        ignore-exceptions:
+          - feign.FeignException$NotFound
+  timelimiter:
+    instances:
+      member-client:
+        timeout-duration: 3s
+  retry:
+    instances:
+      member-client:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2.0
+        retry-exceptions:
+          - java.io.IOException
+          - feign.RetryableException
 
 logging:
   level:
