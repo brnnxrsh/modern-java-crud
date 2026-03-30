@@ -51,6 +51,28 @@ API REST para gerenciamento de portfólio de projetos desenvolvida com Java 21 e
 
 ---
 
+## Endpoints e Acesso
+
+Todos os endpoints privados usam autenticação HTTP Basic.
+
+| Método | Endpoint | Acesso necessário |
+| ------ | -------- | ----------------- |
+| `GET` | `/swagger-ui.html` | Público |
+| `GET` | `/swagger-ui/**` | Público |
+| `GET` | `/v3/api-docs/**` | Público |
+| `GET` | `/projects` | Autenticado (qualquer role) |
+| `GET` | `/projects/{id}` | Autenticado (qualquer role) |
+| `POST` | `/projects` | Autenticado (qualquer role) |
+| `PUT` | `/projects/{id}` | Autenticado (qualquer role) |
+| `DELETE` | `/projects/{id}` | Autenticado (qualquer role) |
+| `PATCH` | `/projects/{id}/next-step` | Autenticado (qualquer role) |
+| `PATCH` | `/projects/{id}/cancel` | Autenticado (qualquer role) |
+| `GET` | `/members/{id}` | Autenticado (qualquer role) |
+| `POST` | `/members` | Autenticado (qualquer role) |
+| `GET` | `/reports` | `ADMIN` |
+
+---
+
 ## Destaques de Implementação
 
 ### Domínio Rico — a entidade tem comportamento
