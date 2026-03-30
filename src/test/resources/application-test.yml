@@ -1,4 +1,23 @@
 spring:
+  config:
+    activate:
+      on-profile: test
+
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
+  docker:
+    compose:
+      enabled: false
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:test}
+    username: ${DB_USER:test}
+    password: ${DB_PASS:test}
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -10,10 +29,10 @@ spring:
 app:
   security:
     users:
-      - name: user
-        password: pass
-        role: USER
+      - name: ${USER_NAME:admin}
+        password: ${USER_PASS:admin}
+        role: ADMIN
 
 clients:
   member:
-    url: http://localhost:1080
+    url: ${MEMBER_CLIENT_URL:http://localhost:1080}

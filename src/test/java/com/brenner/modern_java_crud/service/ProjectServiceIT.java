@@ -36,6 +36,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -43,16 +44,15 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Import(TestcontainersConfiguration.class)
 @Transactional
-class ProjectServiceIT {
+@Tag("docker")
+class ProjectServiceIT extends TestcontainersConfiguration {
 
     static Stream<Arguments> riskLevelByBudgetCases() {
         return ProjectTestFixtures.riskLevelByBudgetCases();

@@ -31,6 +31,8 @@
 		<spring-cloud.version>2025.0.1</spring-cloud.version>
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
+		<skipITs>false</skipITs>
+		<excluded.test.groups></excluded.test.groups>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -190,12 +192,32 @@
 			    <groupId>org.apache.maven.plugins</groupId>
 			    <artifactId>maven-surefire-plugin</artifactId>
 			    <configuration>
+					<excludedGroups>${excluded.test.groups}</excludedGroups>
 			        <argLine>
 			            -XX:+EnableDynamicAgentLoading
 			            -Dmockito.inline=true
 			            -Xshare:off
 			        </argLine>
 			    </configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<skipITs>${skipITs}</skipITs>
+					<excludedGroups>${excluded.test.groups}</excludedGroups>
+					<includes>
+						<include>**/*IT.java</include>
+					</includes>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 			  <groupId>com.diffplug.spotless</groupId>
@@ -244,5 +266,15 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>docker-off</id>
+			<properties>
+				<skipITs>true</skipITs>
+				<excluded.test.groups>docker</excluded.test.groups>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>

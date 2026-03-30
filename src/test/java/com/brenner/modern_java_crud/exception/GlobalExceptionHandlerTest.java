@@ -5,22 +5,41 @@ import static org.assertj.core.api.Assertions.assertThatObject;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import feign.FeignException;
 import feign.Request;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@SpringJUnitConfig
+@ActiveProfiles("test")
+@ContextConfiguration(
+    classes = GlobalExceptionHandlerTest.TestConfig.class,
+    initializers = ConfigDataApplicationContextInitializer.class
+)
 class GlobalExceptionHandlerTest {
 
-    private static final String MOCK_URL = "http://mock-api/resource/1";
+    @TestConfiguration(proxyBeanMethods = false)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    static class TestConfig {}
 
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+
+    @Value("${clients.member.url}")
+    private String memberUrl;
 
     private Request buildRequest() {
         return Request.create(
             Request.HttpMethod.GET,
-            MOCK_URL,
+            memberUrl + "/resource/1",
             Map.of(),
             Request.Body.empty(),
             null
