@@ -6,7 +6,10 @@
     },
     "httpResponse": {
       "statusCode": 201,
-      "body": "{\"id\": 1, \"message\": \"Membro criado com sucesso\"}"
+	  "headers": {
+	  	"Content-Type": ["application/json"]
+	  },
+      "body": "{\"id\": 999, \"name\": \"Mock\", \"role\": \"EMPLOYEE\"}"
     }
   },
   {
